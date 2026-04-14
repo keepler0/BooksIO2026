@@ -128,7 +128,8 @@ namespace BooksIO2026.Consola
             ShowAuthors();
             Console.Write("Select an ID to delete: ");
             var id = int.Parse(Console.ReadLine()!);
-            Console.Write($"Are you sure to delete the author? : ");
+            var authorToDelete = authorService.GetById(id);
+            Console.Write($"Are you sure to delete the author: {authorToDelete?.FullName}? : ");
             var yesOrNo = Console.ReadLine()!;
             if (yesOrNo.ToUpper() == "NO") return;
             var result = authorService.Delete(id);

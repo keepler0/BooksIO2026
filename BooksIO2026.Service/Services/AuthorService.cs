@@ -1,8 +1,8 @@
 ﻿using BooksIO2026.Data.Interfaces;
 using BooksIO2026.Data.Repositories;
-using BooksIO2026.Entities;
 using BooksIO2026.Service.DTOs;
 using BooksIO2026.Service.Interfaces;
+using BooksIO2026.Service.Mappers;
 using BooksIO2026.Service.Validators;
 
 namespace BooksIO2026.Service.Services
@@ -18,11 +18,8 @@ namespace BooksIO2026.Service.Services
         }
         public (bool Success, List<string> Errors) Add(AuthorCreateDto authorDto)
         {
-            var author = new Author{
-                                       FirstName = authorDto.FirstName,
-                                       LastName = authorDto.LastName
-                                   };
-            
+            var author = AuthorMapper.ToAuthor(authorDto);
+
             var result = _authorValidator.Validate(author);//validamos el autor con la clase AuthorValidator que proviene de FluentValidation
             if (!result.IsValid)//si el resultado no es valido, es decir, si hay errores de validacion
             {
@@ -32,7 +29,7 @@ namespace BooksIO2026.Service.Services
                     return (false, errors);//retornamos false y la lista de errores para mostrar los errores que se presento
                 }
             }
-            if (!_authorRepository.Exist(author.FirstName,author.LastName))
+            if (!_authorRepository.Exist(author.FirstName, author.LastName))
             {
                 try
                 {
@@ -68,51 +65,33 @@ namespace BooksIO2026.Service.Services
         public List<AuthorListDto> GetAll()
         {
             return _authorRepository.GetAll()
-                                    .Select(a => new AuthorListDto
-                                    {
-                                        AuthorId = a.AuthorId,
-                                        FullName = $"{a.FirstName} {a.LastName}"
-                                    }).ToList();
+                                    .Select(a => AuthorMapper.ToAuthorListDto(a))
+                                    .ToList();
         }
 
         public AuthorUpdateDto? GetAuthorForUpdate(int id)
         {
-            var author=_authorRepository.GetById(id);
+            var author = _authorRepository.GetById(id);
             if (author is not null)
             {
-                return new AuthorUpdateDto
-                {
-                    AuthorId = author.AuthorId,
-                    FirstName = author.FirstName,
-                    LastName = author.LastName
-                };
+                return AuthorMapper.ToAuthorUpdateDto(author);
             }
             return null;
         }
 
         public AuthorDetailDto? GetById(int id)
         {
-            var author =_authorRepository.GetById(id);
+            var author = _authorRepository.GetById(id);
             if (author is not null)
             {
-                return new AuthorDetailDto
-                {
-                    AuthorId = author.AuthorId,
-                    FirstName = author.FirstName,
-                    LastName = author.LastName
-                };
+                return AuthorMapper.ToAuthorDetailDto(author);
             }
             return null;
         }
 
         public (bool Success, List<string> Errors) Update(AuthorUpdateDto authorDto)
         {
-            var author = new Author //este mapeado no corresponde a su responsabilidad, lo ideal seria usar AutoMapper pero mas adelante lo veremos
-            {
-                AuthorId = authorDto.AuthorId,
-                FirstName = authorDto.FirstName,
-                LastName = authorDto.LastName
-            };
+            var author = AuthorMapper.ToAuthor(authorDto);
             var result = _authorValidator.Validate(author);
             if (!result.IsValid)
             {
@@ -122,7 +101,7 @@ namespace BooksIO2026.Service.Services
                     return (false, errors);
                 }
             }
-            if (!_authorRepository.Exist(author.FirstName,author.LastName,author.AuthorId))
+            if (!_authorRepository.Exist(author.FirstName, author.LastName, author.AuthorId))
             {
                 try
                 {
