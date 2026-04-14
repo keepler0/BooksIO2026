@@ -1,12 +1,14 @@
-﻿using BooksIO2026.Service.DTOs;
+﻿using BooksIO2026.IoC;
+using BooksIO2026.Service.DTOs;
 using BooksIO2026.Service.Interfaces;
 using BooksIO2026.Service.Services;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace BooksIO2026.Consola
 {
     internal class Program
     {
-        static IAuthorService authorService = new AuthorService();
+        static IServiceProvider serviceProvider = DependencyIntectionContainer.Configure();
         static void Main(string[] args)
         {
             do
@@ -40,44 +42,48 @@ namespace BooksIO2026.Consola
 
         private static void AuthorMenu()
         {
-            do
+            using (var scoped = serviceProvider.CreateScope())
             {
-                Console.Clear();
-                Console.WriteLine("Authors menu");
-                Console.WriteLine("[1] List of authors");
-                Console.WriteLine("[2] Add author");
-                Console.WriteLine("[3] Delete author");
-                Console.WriteLine("[4] Update author");
-                Console.WriteLine("[0] Exit");
-                Console.Write("Select an option: ");
-                var option = Console.ReadLine();
-                switch (option)
+                var authorService = scoped.ServiceProvider.GetRequiredService<IAuthorService>();
+                do
                 {
-                    case "0":
-                        Console.Clear();
-                        return;
-                    case "1":
-                        ListAuthors();
-                        break;
-                    case "2":
-                        AddAuthor();
-                        break;
-                    case "3":
-                        DeleteAuthor();
-                        break;
-                    case "4":
-                        UpdateAuthor();
-                        break;
+                    Console.Clear();
+                    Console.WriteLine("Authors menu");
+                    Console.WriteLine("[1] List of authors");
+                    Console.WriteLine("[2] Add author");
+                    Console.WriteLine("[3] Delete author");
+                    Console.WriteLine("[4] Update author");
+                    Console.WriteLine("[0] Exit");
+                    Console.Write("Select an option: ");
+                    var option = Console.ReadLine();
+                    switch (option)
+                    {
+                        case "0":
+                            Console.Clear();
+                            return;
+                        case "1":
+                            ListAuthors(authorService);
+                            break;
+                        case "2":
+                            AddAuthor(authorService);
+                            break;
+                        case "3":
+                            DeleteAuthor(authorService);
+                            break;
+                        case "4":
+                            UpdateAuthor(authorService);
+                            break;
 
-                }
-            } while (true);
+                    }
+                } while (true);
+            }
         }
 
-        private static void UpdateAuthor()
+        private static void UpdateAuthor(IAuthorService authorService)
         {
             Console.Clear();
             Console.WriteLine("Update an author");
-            ShowAuthors();
+            ShowAuthors(authorService);
             Console.Write("Select an ID to update");
             var authorId = int.Parse(Console.ReadLine()!);
             var authorToUpdate = authorService.GetAuthorForUpdate(authorId);
@@ -119,13 +125,13 @@ namespace BooksIO2026.Consola
             return (firstName, lastName);
         }
 
-        private static void DeleteAuthor()
+        private static void DeleteAuthor(IAuthorService authorService)
         {
             Console.Clear();
             Console.WriteLine("Delete actor");
             Console.WriteLine("List of available authors");
 
-            ShowAuthors();
+            ShowAuthors(authorService);
             Console.Write("Select an ID to delete: ");
             var id = int.Parse(Console.ReadLine()!);
             var authorToDelete = authorService.GetById(id);
@@ -147,7 +153,7 @@ namespace BooksIO2026.Consola
             CleanScreen();
         }
 
-        private static void AddAuthor()
+        private static void AddAuthor(IAuthorService authorService)
         {
             Console.Clear();
             Console.WriteLine("Add a new author");
@@ -179,15 +185,15 @@ namespace BooksIO2026.Consola
             Console.Clear();
         }
 
-        private static void ListAuthors()
+        private static void ListAuthors(IAuthorService authorService)
         {
             Console.Clear();
             Console.WriteLine("List of authors");
-            ShowAuthors();
+            ShowAuthors(authorService);
             CleanScreen();
         }
 
-        private static void ShowAuthors()
+        private static void ShowAuthors(IAuthorService authorService)
         {
             var authorsList = authorService.GetAll();
             foreach (var authorListDto in authorsList)

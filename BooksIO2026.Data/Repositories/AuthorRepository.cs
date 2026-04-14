@@ -6,69 +6,54 @@ namespace BooksIO2026.Data.Repositories
 {
     public class AuthorRepository : IAuthorRepository
     {
+        private readonly BooksDbContext _context;
+
+        public AuthorRepository(BooksDbContext context)
+        {
+            _context = context;
+        }
+
         public void Add(Author author)
         {
-            using (var context = new BooksDbContext())
-            {
-                context.Authors.Add(author);
-                context.SaveChanges();
-            }
+            _context.Authors.Add(author);
         }
 
         public void Delete(int id)
         {
-            using (var context = new BooksDbContext())
-            {
-                var authorToDelete = GetById(id);
-                if (authorToDelete is null) return;
+            var authorToDelete = _context.Authors.Find(id);
+            if (authorToDelete is null) return;
 
-                context.Authors.Remove(authorToDelete);
-                context.SaveChanges();
-            }
+            _context.Authors.Remove(authorToDelete);
         }
 
-        public bool Exist(string firstName, string lastName,int? id=null)
+        public bool Exist(string firstName, string lastName, int? id = null)
         {
-            using (var context=new BooksDbContext())
+            Author? author;
+            if (id.HasValue)
             {
-                Author? author;
-                if (id.HasValue)
-                {
-                    author = context.Authors.FirstOrDefault(a => a.FirstName == firstName &&
-                                                                 a.LastName == lastName &&
-                                                                 a.AuthorId!=id);
-                }
-                author = context.Authors.FirstOrDefault(a => a.FirstName == firstName &&
-                                                                 a.LastName == lastName);
-                return author is not null;
+                author = _context.Authors.FirstOrDefault(a => a.FirstName == firstName &&
+                                                             a.LastName == lastName &&
+                                                             a.AuthorId != id);
             }
+            author = _context.Authors.FirstOrDefault(a => a.FirstName == firstName &&
+                                                             a.LastName == lastName);
+            return author is not null;
         }
 
         public List<Author> GetAll()
         {
-            using (var context = new BooksDbContext())
-            {
-                return context.Authors
-                              .AsNoTracking()
-                              .ToList();
-            }
+            return _context.Authors.AsNoTracking()
+                                   .ToList();
         }
 
         public Author? GetById(int id)
         {
-            using (var context = new BooksDbContext())
-            {
-                return context.Authors.Find(id);
-            }
+            return _context.Authors.Find(id);
         }
 
         public void Update(Author author)
         {
-            using (var context = new BooksDbContext())
-            {
-                context.Authors.Update(author);
-                context.SaveChanges();
-            }
+            _context.Authors.Update(author);
         }
     }
 }
