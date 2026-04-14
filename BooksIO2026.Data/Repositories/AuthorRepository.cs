@@ -27,6 +27,23 @@ namespace BooksIO2026.Data.Repositories
             }
         }
 
+        public bool Exist(string firstName, string lastName,int? id=null)
+        {
+            using (var context=new BooksDbContext())
+            {
+                Author? author;
+                if (id.HasValue)
+                {
+                    author = context.Authors.FirstOrDefault(a => a.FirstName == firstName &&
+                                                                 a.LastName == lastName &&
+                                                                 a.AuthorId!=id);
+                }
+                author = context.Authors.FirstOrDefault(a => a.FirstName == firstName &&
+                                                                 a.LastName == lastName);
+                return author is not null;
+            }
+        }
+
         public List<Author> GetAll()
         {
             using (var context = new BooksDbContext())

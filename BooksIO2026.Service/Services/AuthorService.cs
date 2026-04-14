@@ -1,6 +1,7 @@
 ﻿using BooksIO2026.Data.Interfaces;
 using BooksIO2026.Data.Repositories;
 using BooksIO2026.Entities;
+using BooksIO2026.Service.DTOs;
 using BooksIO2026.Service.Interfaces;
 using BooksIO2026.Service.Validators;
 
@@ -15,8 +16,13 @@ namespace BooksIO2026.Service.Services
             _authorRepository = new AuthorRepository();
             _authorValidator = new AuthorValidator();
         }
-        public (bool Success, List<string> Errors) Add(Author author)
+        public (bool Success, List<string> Errors) Add(AuthorCreateDto authorDto)
         {
+            var author = new Author{
+                                       FirstName = authorDto.FirstName,
+                                       LastName = authorDto.LastName
+                                   };
+            
             var result = _authorValidator.Validate(author);//validamos el autor con la clase AuthorValidator que proviene de FluentValidation
             if (!result.IsValid)//si el resultado no es valido, es decir, si hay errores de validacion
             {
@@ -26,15 +32,22 @@ namespace BooksIO2026.Service.Services
                     return (false, errors);//retornamos false y la lista de errores para mostrar los errores que se presento
                 }
             }
-            try
+            if (!_authorRepository.Exist(author.FirstName,author.LastName))
             {
-                _authorRepository.Add(author);
-                return (true, new List<string>());
-                //de lo contrario, si el autor es valido, lo agregamos a la base de datos y retornamos true y una lista vacia de errores
+                try
+                {
+                    _authorRepository.Add(author);
+                    return (true, new List<string>());
+                    //de lo contrario, si el autor es valido, lo agregamos a la base de datos y retornamos true y una lista vacia de errores
+                }
+                catch (Exception)
+                {
+                    return (false, new List<string>() { "Database error" });
+                }
             }
-            catch (Exception)
+            else
             {
-                return (false, new List<string>() { "Database error" });
+                return (false, new List<string>() { "Author already exists" });
             }
         }
 
@@ -51,18 +64,55 @@ namespace BooksIO2026.Service.Services
             }
         }
 
-        public List<Author> GetAll()
+        //Como ahora usamos AuthorListDto para mostrar la lista de autores tenemos que crear los objetos AuthorListDto con el metodo Select de Linq
+        public List<AuthorListDto> GetAll()
         {
-            return _authorRepository.GetAll();
+            return _authorRepository.GetAll()
+                                    .Select(a => new AuthorListDto
+                                    {
+                                        AuthorId = a.AuthorId,
+                                        FullName = $"{a.FirstName} {a.LastName}"
+                                    }).ToList();
         }
 
-        public Author? GetById(int id)
+        public AuthorUpdateDto? GetAuthorForUpdate(int id)
         {
-            return _authorRepository.GetById(id);
+            var author=_authorRepository.GetById(id);
+            if (author is not null)
+            {
+                return new AuthorUpdateDto
+                {
+                    AuthorId = author.AuthorId,
+                    FirstName = author.FirstName,
+                    LastName = author.LastName
+                };
+            }
+            return null;
         }
 
-        public (bool Success, List<string> Errors) Update(Author author)
+        public AuthorDetailDto? GetById(int id)
         {
+            var author =_authorRepository.GetById(id);
+            if (author is not null)
+            {
+                return new AuthorDetailDto
+                {
+                    AuthorId = author.AuthorId,
+                    FirstName = author.FirstName,
+                    LastName = author.LastName
+                };
+            }
+            return null;
+        }
+
+        public (bool Success, List<string> Errors) Update(AuthorUpdateDto authorDto)
+        {
+            var author = new Author //este mapeado no corresponde a su responsabilidad, lo ideal seria usar AutoMapper pero mas adelante lo veremos
+            {
+                AuthorId = authorDto.AuthorId,
+                FirstName = authorDto.FirstName,
+                LastName = authorDto.LastName
+            };
             var result = _authorValidator.Validate(author);
             if (!result.IsValid)
             {
@@ -72,14 +122,21 @@ namespace BooksIO2026.Service.Services
                     return (false, errors);
                 }
             }
-            try
+            if (!_authorRepository.Exist(author.FirstName,author.LastName,author.AuthorId))
             {
-                _authorRepository.Update(author);
-                return (true, new List<string>());
+                try
+                {
+                    _authorRepository.Update(author);
+                    return (true, new List<string>());
+                }
+                catch (Exception)
+                {
+                    return (false, new List<string>() { "Database error" });
+                }
             }
-            catch (Exception)
+            else
             {
-                return (true, new List<string>() { "Database error" });
+                return (false, new List<string>() { "Author already exist!" });
             }
         }
     }

@@ -1,4 +1,4 @@
-﻿using BooksIO2026.Entities;
+﻿using BooksIO2026.Service.DTOs;
 using BooksIO2026.Service.Interfaces;
 using BooksIO2026.Service.Services;
 
@@ -19,6 +19,9 @@ namespace BooksIO2026.Consola
                 var option = Console.ReadLine();
                 switch (option)
                 {
+                    case "0":
+                        Environment.Exit(0);
+                        break;
                     case "1":
                         AuthorMenu();
                         break;
@@ -37,29 +40,37 @@ namespace BooksIO2026.Consola
 
         private static void AuthorMenu()
         {
-            Console.WriteLine("Authors menu");
-            Console.WriteLine("[1] List of authors");
-            Console.WriteLine("[2] Add author");
-            Console.WriteLine("[3] Delete author");
-            Console.WriteLine("[4] Update author");
-            Console.WriteLine("[0] Exit");
-            Console.Write("Select an option: ");
-            var option = Console.ReadLine();
-            switch (option)
+            do
             {
-                case "1":
-                    ListAuthors();
-                    break;
-                case "2":
-                    AddAuthor();
-                    break;
-                case "3":
-                    DeleteAuthor();
-                    break;
-                case "4":
-                    UpdateAuthor();
-                    break;
-            }
+                Console.Clear();
+                Console.WriteLine("Authors menu");
+                Console.WriteLine("[1] List of authors");
+                Console.WriteLine("[2] Add author");
+                Console.WriteLine("[3] Delete author");
+                Console.WriteLine("[4] Update author");
+                Console.WriteLine("[0] Exit");
+                Console.Write("Select an option: ");
+                var option = Console.ReadLine();
+                switch (option)
+                {
+                    case "0":
+                        Console.Clear();
+                        return;
+                    case "1":
+                        ListAuthors();
+                        break;
+                    case "2":
+                        AddAuthor();
+                        break;
+                    case "3":
+                        DeleteAuthor();
+                        break;
+                    case "4":
+                        UpdateAuthor();
+                        break;
+
+                }
+            } while (true);
         }
 
         private static void UpdateAuthor()
@@ -67,18 +78,19 @@ namespace BooksIO2026.Consola
             Console.Clear();
             Console.WriteLine("Update an author");
             ShowAuthors();
-
-            Console.WriteLine("Select an ID to updte");
+            Console.Write("Select an ID to update");
             var authorId = int.Parse(Console.ReadLine()!);
-            var authorToUpdate = authorService.GetById(authorId);
+            var authorToUpdate = authorService.GetAuthorForUpdate(authorId);
             if (authorToUpdate is not null)
             {
-                Console.WriteLine($"Are you sure to update {authorToUpdate.ToString()}?");
+                Console.Write($"Are you sure to update {authorToUpdate.FullName}? : ");
                 var yesOrNo = Console.ReadLine()!;
                 if (yesOrNo.ToUpper() == "NO") return;
-                authorToUpdate = BuildAuthor(authorToUpdate);
+                var fullname = CreateFullName();
+                authorToUpdate.FirstName = string.IsNullOrEmpty(fullname.Item1) ? authorToUpdate.FirstName : fullname.Item1;
+                authorToUpdate.LastName = string.IsNullOrEmpty(fullname.Item2) ? authorToUpdate.LastName : fullname.Item2;
 
-                var result= authorService.Update(authorToUpdate);
+                var result = authorService.Update(authorToUpdate);
                 if (!result.Success)//este bloque se ejecutara si la actualización no fue exitosa, es decir, si hubo errores
                 {
                     foreach (var error in result.Errors)
@@ -90,27 +102,21 @@ namespace BooksIO2026.Consola
                 {
                     Console.WriteLine("Author seccessfully updated!");
                 }
-                
             }
+            else
+            {
+                Console.WriteLine("ERROR: The author was not found.");
+            }
+            CleanScreen();
         }
 
-        private static Author BuildAuthor(Author? author = null)
+        private static (string, string) CreateFullName()
         {
             Console.Write("Set new first name: ");
             var firstName = Console.ReadLine()!;
-            Console.Write("Set new Last name");
-            var LastName = Console.ReadLine()!;
-            if (author is not null)
-            {
-                author.FirstName = string.IsNullOrWhiteSpace(firstName) ? author.FirstName : firstName;
-                author.LastName = string.IsNullOrWhiteSpace(LastName) ? author.LastName : LastName;
-                return author;
-            }
-            return new Author
-            {
-                FirstName = firstName,
-                LastName = LastName
-            };
+            Console.Write("Set new Last name: ");
+            var lastName = Console.ReadLine()!;
+            return (firstName, lastName);
         }
 
         private static void DeleteAuthor()
@@ -122,10 +128,10 @@ namespace BooksIO2026.Consola
             ShowAuthors();
             Console.Write("Select an ID to delete: ");
             var id = int.Parse(Console.ReadLine()!);
-            Console.WriteLine($"Are you sure to delete the author?");
+            Console.Write($"Are you sure to delete the author? : ");
             var yesOrNo = Console.ReadLine()!;
             if (yesOrNo.ToUpper() == "NO") return;
-            var result= authorService.Delete(id);
+            var result = authorService.Delete(id);
             if (!result.Success)
             {
                 foreach (var error in result.Errors)
@@ -137,17 +143,21 @@ namespace BooksIO2026.Consola
             {
                 Console.WriteLine("Author deleted succesfully");
             }
-            Console.WriteLine("Press any key to continue....");
-            Console.ReadKey();
+            CleanScreen();
         }
 
         private static void AddAuthor()
         {
             Console.Clear();
             Console.WriteLine("Add a new author");
-            var newAuthor = BuildAuthor();
-            var result=authorService.Add(newAuthor);
-             if (!result.Success)
+            var fullname = CreateFullName();
+            var newAuthorDto = new AuthorCreateDto
+            {
+                FirstName = fullname.Item1,
+                LastName = fullname.Item2
+            };
+            var result = authorService.Add(newAuthorDto);
+            if (!result.Success)
             {
                 foreach (var error in result.Errors)
                 {
@@ -158,26 +168,30 @@ namespace BooksIO2026.Consola
             {
                 Console.WriteLine("Author added succesfully!");
             }
-             Console.WriteLine("Press any key to continue....");
-             Console.ReadKey();
-
+            CleanScreen();
         }
 
+        private static void CleanScreen()
+        {
+            Console.WriteLine("Press any key to continue....");
+            Console.ReadKey();
+            Console.Clear();
+        }
 
         private static void ListAuthors()
         {
             Console.Clear();
             Console.WriteLine("List of authors");
-            Console.WriteLine("ID  FullName");
             ShowAuthors();
+            CleanScreen();
         }
 
         private static void ShowAuthors()
         {
             var authorsList = authorService.GetAll();
-            foreach (var author in authorsList)
+            foreach (var authorListDto in authorsList)
             {
-                Console.WriteLine($"{author.AuthorId} {author.ToString()}");
+                Console.WriteLine($"ID: {authorListDto.AuthorId,4} Name: {authorListDto.FullName,-30}");
             }
         }
     }
