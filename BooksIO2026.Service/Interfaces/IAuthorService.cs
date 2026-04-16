@@ -1,5 +1,4 @@
-﻿using BooksIO2026.Entities;
-using BooksIO2026.Service.DTOs;
+﻿using BooksIO2026.Service.DTOs;
 
 namespace BooksIO2026.Service.Interfaces
 {

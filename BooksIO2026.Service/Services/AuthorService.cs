@@ -108,7 +108,9 @@ namespace BooksIO2026.Service.Services
             {
                 foreach (var error in result.Errors)
                 {
-                    var errors = result.Errors.Select(e => e.ErrorMessage).ToList();
+                    var errors = result.Errors
+                                       .Select(e => e.ErrorMessage)
+                                       .ToList();
                     return (false, errors);
                 }
             }

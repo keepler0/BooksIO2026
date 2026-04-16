@@ -32,11 +32,11 @@ namespace BooksIO2026.Data.Repositories
             if (id.HasValue)
             {
                 author = _context.Authors.FirstOrDefault(a => a.FirstName == firstName &&
-                                                             a.LastName == lastName &&
-                                                             a.AuthorId != id);
+                                                              a.LastName == lastName &&
+                                                              a.AuthorId != id.Value);
             }
             author = _context.Authors.FirstOrDefault(a => a.FirstName == firstName &&
-                                                             a.LastName == lastName);
+                                                          a.LastName == lastName);
             return author is not null;
         }
 

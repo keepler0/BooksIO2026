@@ -8,6 +8,7 @@ namespace BooksIO2026.Data
         /*DbSet para cada entidad que se quiera mapear a la base de datos,
         en este caso solo Author pero se pueden agregar mas DbSet para otras entidades como Book, Publisher, etc.*/
         public DbSet<Author> Authors { get; set; }
+        public DbSet<Publisher> Publishers { get; set; }
 
         //sobreescribimos el metodo OnConfiguring para configurar la conexion a la base de datos, en este caso sql server
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
