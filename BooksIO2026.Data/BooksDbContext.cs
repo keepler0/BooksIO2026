@@ -9,6 +9,7 @@ namespace BooksIO2026.Data
         en este caso solo Author pero se pueden agregar mas DbSet para otras entidades como Book, Publisher, etc.*/
         public DbSet<Author> Authors { get; set; }
         public DbSet<Publisher> Publishers { get; set; }
+        public DbSet<Book> Books { get; set; }
 
         //sobreescribimos el metodo OnConfiguring para configurar la conexion a la base de datos, en este caso sql server
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -16,7 +17,11 @@ namespace BooksIO2026.Data
             //Cadena de conexion para sql server, se puede cambiar por otra base de datos como mysql o postgresql,
             //pero se debe instalar el paquete correspondiente y cambiar el provider en el OnConfiguring
             //UseSqlServer proviene del paquete Microsoft.EntityFrameworkCore.SqlServer por lo tanto hay que instalar en nuget
-            optionsBuilder.UseSqlServer("Data Source=.; Initial Catalog=BooksIO2026; Integrated Security=true; Trusted_Connection=True; TrustServerCertificate=True;");
+            optionsBuilder.UseSqlServer(@"Data Source=.; 
+                                          Initial Catalog=BooksIO2026; 
+                                          Integrated Security=true; 
+                                          Trusted_Connection=True; 
+                                          TrustServerCertificate=True;");
         }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

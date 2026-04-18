@@ -4,6 +4,7 @@ using BooksIO2026.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BooksIO2026.Data.Migrations
 {
     [DbContext(typeof(BooksDbContext))]
-    partial class BooksDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260417221213_AddRelationBooksToPublishers")]
+    partial class AddRelationBooksToPublishers
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -74,18 +77,13 @@ namespace BooksIO2026.Data.Migrations
 
                     b.Property<string>("Title")
                         .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("BookId");
 
                     b.HasIndex("AuthorId");
 
                     b.HasIndex("PublisherId");
-
-                    b.HasIndex("Title")
-                        .IsUnique()
-                        .HasDatabaseName("IX_Books_Title");
 
                     b.ToTable("Books");
                 });
