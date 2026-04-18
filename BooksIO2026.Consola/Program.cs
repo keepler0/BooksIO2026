@@ -2,7 +2,9 @@
 using BooksIO2026.Service.DTOs;
 using BooksIO2026.Service.DTOs.Publisher;
 using BooksIO2026.Service.Interfaces;
+using BooksIO2026.Service.Mappers;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.IdentityModel.Tokens;
 
 namespace BooksIO2026.Consola
 {
@@ -52,6 +54,7 @@ namespace BooksIO2026.Consola
                     Console.WriteLine("[2] Add publisher");
                     Console.WriteLine("[3] Update publisher");
                     Console.WriteLine("[4] Delete publisher");
+                    Console.WriteLine("[5] Show publisher data");
                     Console.WriteLine("[0] Exit");
                     Console.Write("Select an option: ");
                     var option = Console.ReadLine();
@@ -72,10 +75,33 @@ namespace BooksIO2026.Consola
                         case "4":
                             DeletePublisher(publisherService);
                             break;
-
+                        case "5":
+                            ShowPublisherData(publisherService);
+                            break;
                     }
                 } while (true);
             }
+        }
+
+        private static void ShowPublisherData(IPublisherService publisherService)
+        {
+            Console.Clear();
+            ShowPublishers(publisherService);
+            Console.Write("Select an ID to delete: ");
+            var id = int.Parse(Console.ReadLine()!);
+            var publisherDto = publisherService.GetById(id);
+            if (publisherDto is null)
+            {
+                Console.WriteLine("Publisher not found!");
+                return;
+            }
+            var email = string.IsNullOrWhiteSpace(publisherDto.Email) ? "Email no disponible" 
+                                                                      : publisherDto.Email;
+            var isActiveMessage = publisherDto.IsActive ? "Active" 
+                                                        : "Inactive";
+            Console.Clear();
+            Console.WriteLine($"ID: {publisherDto.PublisherId}\nName: {publisherDto.Name}\nFounded date: {publisherDto.FoundedDate.ToString("yyyy,dd,mm")}\nEmail: {email}\nIs active?: {isActiveMessage}");
+            CleanScreen();
         }
 
         private static void DeletePublisher(IPublisherService publisherService)

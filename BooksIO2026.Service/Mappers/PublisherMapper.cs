@@ -34,6 +34,7 @@ namespace BooksIO2026.Service.Mappers
                 Name = publisher.Name,
                 Country = publisher.Country,
                 FoundedDate = publisher.FoundedDate,
+                Email = publisher.Email,
                 IsActive = publisher.IsActive
             };
         }
