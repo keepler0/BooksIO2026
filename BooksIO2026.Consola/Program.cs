@@ -35,7 +35,7 @@ namespace BooksIO2026.Consola
                         PublishersMenu();
                         break;
                 }
-
+                Console.Clear();
             } while (true);
         }
         #region Publisher
