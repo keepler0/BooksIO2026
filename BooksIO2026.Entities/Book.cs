@@ -11,5 +11,7 @@
         public Author? Author { get; set; }
         public int PublisherId { get; set; }
         public Publisher? Publisher { get; set; }
+        //TODO: El libro tambien deberia tener una descripcion o una sinapsis
+        //tmabien  se podria agregar como dificultad de lectura, Cantidad de paginas, estado, ISBN, Formato,
     }
 }

@@ -4,6 +4,7 @@ using BooksIO2026.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BooksIO2026.Data.Migrations
 {
     [DbContext(typeof(BooksDbContext))]
-    partial class BooksDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260418212116_AddBooksConfigurations")]
+    partial class AddBooksConfigurations
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -89,48 +92,6 @@ namespace BooksIO2026.Data.Migrations
                         .IsUnique();
 
                     b.ToTable("Books");
-
-                    b.HasData(
-                        new
-                        {
-                            BookId = 1,
-                            AuthorId = 1013,
-                            IsActive = true,
-                            Price = 50m,
-                            PublishedDate = new DateTime(2008, 1, 8, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            PublisherId = 7,
-                            Title = "Clean Code: A Handbook of Agile Software Craftsmanship"
-                        },
-                        new
-                        {
-                            BookId = 2,
-                            AuthorId = 1014,
-                            IsActive = true,
-                            Price = 40m,
-                            PublishedDate = new DateTime(2008, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            PublisherId = 9,
-                            Title = "C# in Depth 1st edition"
-                        },
-                        new
-                        {
-                            BookId = 3,
-                            AuthorId = 1014,
-                            IsActive = true,
-                            Price = 45m,
-                            PublishedDate = new DateTime(2010, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            PublisherId = 9,
-                            Title = "C# in Depth 2st edition"
-                        },
-                        new
-                        {
-                            BookId = 4,
-                            AuthorId = 1013,
-                            IsActive = true,
-                            Price = 35m,
-                            PublishedDate = new DateTime(2017, 9, 20, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            PublisherId = 7,
-                            Title = "Clean Architecture: A Craftsman's Guide to Software Structure and Design"
-                        });
                 });
 
             modelBuilder.Entity("BooksIO2026.Entities.Publisher", b =>

@@ -28,6 +28,11 @@ namespace BooksIO2026.IoC
             services.AddScoped<IPublisherService, PublisherService>();
             services.AddScoped<IValidator<Publisher>, PublisherValidator>();
             #endregion
+            #region Book
+            services.AddScoped<IValidator<Book>, BookValidator>();
+            services.AddScoped<IBookRepository, BookRepository>();
+            services.AddScoped<IBookService, BookService>();
+            #endregion
 
             return services.BuildServiceProvider();
 

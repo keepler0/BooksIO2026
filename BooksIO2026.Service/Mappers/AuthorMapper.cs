@@ -22,7 +22,7 @@ namespace BooksIO2026.Service.Mappers
                 LastName = author.LastName
             };
         }
-        public static Author ToAuthor(AuthorUpdateDto authorUpdateDto)
+        public static Author ToAuthorEntity(AuthorUpdateDto authorUpdateDto)
         {
             return new Author
             {
@@ -40,7 +40,7 @@ namespace BooksIO2026.Service.Mappers
                 LastName = author.LastName
             };
         }
-        public static Author ToAuthor(AuthorCreateDto AuthorDto)
+        public static Author ToAuthorEntity(AuthorCreateDto AuthorDto)
         {
             return new Author
             {

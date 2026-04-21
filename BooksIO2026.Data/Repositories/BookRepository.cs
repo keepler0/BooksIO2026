@@ -45,7 +45,9 @@ namespace BooksIO2026.Data.Repositories
 
         public Book? GetById(int id)
         {
-            var bookInDb= _context.Books.Find(id);
+            var bookInDb = _context.Books.Include(b => b.Author)
+                                         .Include(b => b.Publisher)
+                                         .FirstOrDefault(b=>b.BookId==id);
             return bookInDb;
         }
 

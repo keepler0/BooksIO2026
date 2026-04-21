@@ -23,7 +23,7 @@ namespace BooksIO2026.Service.Services
         }
         public (bool Success, List<string> Errors) Add(AuthorCreateDto authorDto)
         {
-            var author = AuthorMapper.ToAuthor(authorDto);
+            var author = AuthorMapper.ToAuthorEntity(authorDto);
 
             var result = _authorValidator.Validate(author);//validamos el autor con la clase AuthorValidator que proviene de FluentValidation
             if (!result.IsValid)//si el resultado no es valido, es decir, si hay errores de validacion
@@ -99,7 +99,7 @@ namespace BooksIO2026.Service.Services
         public (bool Success, List<string> Errors) Update(AuthorUpdateDto authorDto)
         {
             //var author = AuthorMapper.ToAuthor(authorDto);
-            var author= _authorRepository.GetById(authorDto.AuthorId);
+            var author = _authorRepository.GetById(authorDto.AuthorId);
             if (author is null) return (false, new List<string>() { "Author not found" });
             author.FirstName = authorDto.FirstName;
             author.LastName = authorDto.LastName;
