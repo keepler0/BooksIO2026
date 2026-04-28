@@ -119,7 +119,7 @@ namespace BooksIO2026.Consola
             var yesOrNo = Console.ReadLine()!;
             if (yesOrNo.ToUpper() == "NO") return;
             var result = publisherService.Delete(id);
-            if (!result.success)
+            if (result.Isfailure)
             {
                 foreach (var error in result.Errors)
                 {
@@ -154,7 +154,7 @@ namespace BooksIO2026.Consola
                 publisherToUpdate.IsActive = publisherData.Item5;
 
                 var result = publisherService.Update(publisherToUpdate);
-                if (!result.success)//este bloque se ejecutara si la actualización no fue exitosa, es decir, si hubo errores
+                if (result.Isfailure)//este bloque se ejecutara si la actualización no fue exitosa, es decir, si hubo errores
                 {
                     foreach (var error in result.Errors)
                     {
@@ -186,7 +186,7 @@ namespace BooksIO2026.Consola
                 Email = publisherData.Item4
             };
             var result = publisherService.Add(newPulisherDto);
-            if (!result.success)
+            if (result.Isfailure)
             {
                 foreach (var error in result.Errors)
                 {
@@ -321,7 +321,7 @@ namespace BooksIO2026.Consola
             var yesOrNo = Console.ReadLine()!;
             if (yesOrNo.ToUpper() == "NO") return;
             var result = bookService.Delete(id);
-            if (!result.Success)
+            if (result.Isfailure)
             {
                 foreach (var error in result.Errors)
                 {
@@ -358,7 +358,7 @@ namespace BooksIO2026.Consola
                 bookToUpdate.AuthorId = SelectAuthorId(authorService);
                 bookToUpdate.PublisherId = SelectPublisherId(publisherService);
                 var result = bookService.Update(bookToUpdate);
-                if (!result.Success)
+                if (result.Isfailure)
                 {
                     foreach (var error in result.Errors)
                     {
@@ -396,7 +396,7 @@ namespace BooksIO2026.Consola
                 PublisherId = publisherId
             };
             var result = bookService.Add(newBookDto);
-            if (!result.Success)
+            if (result.Isfailure)
             {
                 foreach (var error in result.Errors)
                 {
@@ -420,8 +420,8 @@ namespace BooksIO2026.Consola
                 Console.Write("id: ");
                 var id = int.Parse(Console.ReadLine()!);
                 var PublishersIDs = publisherService.GetAll()
-                                                 .Select(p => p.PublisherId)
-                                                 .ToList();
+                                                    .Select(p => p.PublisherId)
+                                                    .ToList();
                 if (PublishersIDs.Contains(id))
                 {
                     return id;
@@ -547,7 +547,7 @@ namespace BooksIO2026.Consola
                 authorToUpdate.LastName = string.IsNullOrEmpty(fullname.Item2) ? authorToUpdate.LastName : fullname.Item2;
 
                 var result = authorService.Update(authorToUpdate);
-                if (!result.Success)//este bloque se ejecutara si la actualización no fue exitosa, es decir, si hubo errores
+                if (result.Isfailure)//este bloque se ejecutara si la actualización no fue exitosa, es decir, si hubo errores
                 {
                     foreach (var error in result.Errors)
                     {
@@ -589,7 +589,7 @@ namespace BooksIO2026.Consola
             var yesOrNo = Console.ReadLine()!;
             if (yesOrNo.ToUpper() == "NO") return;
             var result = authorService.Delete(id);
-            if (!result.Success)
+            if (result.Isfailure)
             {
                 foreach (var error in result.Errors)
                 {
@@ -614,7 +614,7 @@ namespace BooksIO2026.Consola
                 LastName = fullname.Item2
             };
             var result = authorService.Add(newAuthorDto);
-            if (!result.Success)
+            if (result.Isfailure)
             {
                 foreach (var error in result.Errors)
                 {

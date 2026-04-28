@@ -31,7 +31,6 @@ namespace BooksIO2026.Data
             //aplica configuraciones de forma automatica, busca todas las clases que implementen IEntityTypeConfiguration y las aplica automaticamente,
             //no es necesario hacer referencia a cada una de ellas de forma manual
             modelBuilder.ApplyConfigurationsFromAssembly(typeof(BooksDbContext).Assembly);
-
         }
     }
 }

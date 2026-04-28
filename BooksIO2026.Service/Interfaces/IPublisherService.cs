@@ -1,4 +1,5 @@
-﻿using BooksIO2026.Service.DTOs.Publisher;
+﻿using BooksIO2026.Service.Common;
+using BooksIO2026.Service.DTOs.Publisher;
 
 namespace BooksIO2026.Service.Interfaces
 {
@@ -7,8 +8,11 @@ namespace BooksIO2026.Service.Interfaces
         List<PublisherListDto> GetAll();
         PublisherDetailDto? GetById(int id);
         PublisherUpdateDto? GetPublisherForUpdate(int id);
-        (bool success, List<string> Errors) Add(PublisherCreateDto publisherDto);
-        (bool success, List<string> Errors) Update(PublisherUpdateDto publisherDto);
-        (bool success, List<string> Errors) Delete(int id);
+        //(bool success, List<string> Errors) Add(PublisherCreateDto publisherDto);
+        //(bool success, List<string> Errors) Update(PublisherUpdateDto publisherDto);
+        //(bool success, List<string> Errors) Delete(int id);
+        Result Add(PublisherCreateDto publisherDto);
+        Result Update(PublisherUpdateDto publisherDto);
+        Result Delete(int id);
     }
 }

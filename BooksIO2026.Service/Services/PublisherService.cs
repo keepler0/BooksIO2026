@@ -1,6 +1,7 @@
 ﻿using BooksIO2026.Data;
 using BooksIO2026.Data.Interfaces;
 using BooksIO2026.Entities;
+using BooksIO2026.Service.Common;
 using BooksIO2026.Service.DTOs.Publisher;
 using BooksIO2026.Service.Interfaces;
 using BooksIO2026.Service.Mappers;
@@ -23,7 +24,7 @@ namespace BooksIO2026.Service.Services
             _unitOfWork = unitOfWork;
         }
 
-        public (bool success, List<string> Errors) Add(PublisherCreateDto publisherDto)
+        public Result Add(PublisherCreateDto publisherDto)
         {
             var publisher = PublisherMapper.ToPublisher(publisherDto);
             var result = _publisherValidator.Validate(publisher);
@@ -31,8 +32,9 @@ namespace BooksIO2026.Service.Services
             {
                 foreach (var error in result.Errors)
                 {
-                    var errors = result.Errors.Select(error => error.ErrorMessage).ToList();
-                    return (false, errors);
+                    return Result.Failure(result.Errors.Select(error => error.ErrorMessage).ToList());
+                    //var errors = result.Errors.Select(error => error.ErrorMessage).ToList();
+                    //return (false, errors);
                 }
             }
             if (!_unitOfWork.Publishers.Exist(publisher.Name, publisher.Country))
@@ -41,30 +43,36 @@ namespace BooksIO2026.Service.Services
                 {
                     _unitOfWork.Publishers.Add(publisher);
                     _unitOfWork.Save();
-                    return (true, new List<string>());
+                    return Result.Success();
+                    //return (true, new List<string>());
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
-                    return (false, new List<string>() { "Database error" });
+                    return Result.Failure(ex.Message);
+                    //return (false, new List<string>() { "Database error" });
                 }
             }
-            return (false, new List<string>() { "Publisher already exist" });
+            return Result.Failure("Publisher already exist");
+            //return (false, new List<string>() { "Publisher already exist" });
         }
 
-        public (bool success, List<string> Errors) Delete(int id)
+        public Result Delete(int id)
         {
             try
             {
                 if (!_unitOfWork.Publishers.Exist(null, null, id))
-                    return (false, new List<string>() { "Publisher not found" });
+                    return Result.Failure("Publisher not found");
+                    //return (false, new List<string>() { "Publisher not found" });
 
                 _unitOfWork.Publishers.Delete(id);
                 _unitOfWork.Save();
-                return (true, new List<string>());
+                return Result.Success();
+                //return (true, new List<string>());
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                return (true, new List<string>() { "Database error" });
+                return Result.Failure(ex.Message);
+                //return (true, new List<string>() { "Database error" });
             }
         }
 
@@ -95,10 +103,12 @@ namespace BooksIO2026.Service.Services
             return null;
         }
 
-        public (bool success, List<string> Errors) Update(PublisherUpdateDto publisherDto)
+        public Result Update(PublisherUpdateDto publisherDto)
         {
             var publisher = _unitOfWork.Publishers.GetById(publisherDto.PublisherId);
-            if (publisher is null) return (false, new List<string>() { "Publisher not found" });
+            if (publisher is null)
+                return Result.Failure("Publisher not found");
+                //return (false, new List<string>() { "Publisher not found" });
             publisher.Name = publisherDto.Name;
             publisher.Country = publisherDto.Country;
             publisher.FoundedDate = publisherDto.FoundedDate;
@@ -109,25 +119,33 @@ namespace BooksIO2026.Service.Services
             {
                 foreach (var error in result.Errors)
                 {
-                    var errors = result.Errors
-                                      .Select(e => e.ErrorMessage)
-                                      .ToList();
-                    return (false, errors);
+                    return Result.Failure(result.Errors
+                                                .Select(e => e.ErrorMessage)
+                                                .ToList());
+                    //var errors = result.Errors
+                    //                  .Select(e => e.ErrorMessage)
+                    //                  .ToList();
+                    //return (false, errors);
                 }
             }
-            if (!_unitOfWork.Publishers.Exist(publisherDto.Name, publisherDto.Country, publisherDto.PublisherId))
+            if (!_unitOfWork.Publishers.Exist(publisherDto.Name, 
+                                              publisherDto.Country, 
+                                              publisherDto.PublisherId))
             {
                 try
                 {
                     _unitOfWork.Save();
-                    return (true, new List<string>());
+                    return Result.Success();
+                    //return (true, new List<string>());
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
-                    return (false, new List<string>() { "Database error" });
+                    return Result.Failure(ex.Message);
+                    //return (false, new List<string>() { "Database error" });
                 }
             }
-            return (false, new List<string>() { "Publisher already exist!" });
+            return Result.Failure("Publisher already exist!");
+            //return (false, new List<string>() { "Publisher already exist!" });
         }
     }
 }

@@ -1,6 +1,6 @@
 ﻿using BooksIO2026.Data;
-using BooksIO2026.Data.Interfaces;
 using BooksIO2026.Entities;
+using BooksIO2026.Service.Common;
 using BooksIO2026.Service.DTOs.Book;
 using BooksIO2026.Service.Interfaces;
 using BooksIO2026.Service.Mappers;
@@ -23,7 +23,7 @@ namespace BooksIO2026.Service.Services
             _unitOfWork = unitOfWork;
         }
 
-        public (bool Success, List<string> Errors) Add(BookCreateDto bookDto)
+        public Result Add(BookCreateDto bookDto)
         {
             var book = BookMapper.ToBookEntity(bookDto);
             var result = _bookValidator.Validate(book);
@@ -31,40 +31,47 @@ namespace BooksIO2026.Service.Services
             {
                 foreach (var error in result.Errors)
                 {
-                    var errors = result.Errors.Select(e => e.ErrorMessage).ToList();
-                    return (false, errors);
+                    return Result.Failure(result.Errors.Select(e => e.ErrorMessage).ToList());
+                    //var errors = result.Errors.Select(e => e.ErrorMessage).ToList();
+                    //return (false, errors);
                 }
             }
             if (_unitOfWork.Books.Exist(bookDto.Title))
             {
-                return (false, new List<string>() { "The book already exist!" });
+                return Result.Failure("The book already exist!");
+                //return (false, new List<string>() { "The book already exist!" });
             }
             try
             {
                 _unitOfWork.Books.Add(book);
                 _unitOfWork.Save();
-                return (true, new List<string>());
+                return Result.Success();
+                //return (true, new List<string>());
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                return (false, new List<string>() { "Database Error" });
+                return Result.Failure(ex.Message);
+                //return (false, new List<string>() { "Database Error" });
             }
         }
-        public (bool Success, List<string> Errors) Delete(int bookId)
+        public Result Delete(int bookId)
         {
             try
             {
                 if (_unitOfWork.Books.GetById(bookId) is null)
                 {
-                    return (false, new List<string>() { "Book not found!" });
+                    return Result.Failure("Book not found!");
+                    // (false, new List<string>() { "Book not found!" });
                 }
                 _unitOfWork.Books.Delete(bookId);
                 _unitOfWork.Save();
-                return (true, new List<string>());
+                return Result.Success();
+                //return (true, new List<string>());
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                return (false, new List<string>() { "Database error" });
+                return Result.Failure(ex.Message);
+                //return (false, new List<string>() { "Database error" });
             }
         }
 
@@ -92,12 +99,13 @@ namespace BooksIO2026.Service.Services
             return null;
         }
 
-        public (bool Success, List<string> Errors) Update(BookUpdateDto bookDto)
+        public Result Update(BookUpdateDto bookDto)
         {
             var book = _unitOfWork.Books.GetById(bookDto.BookId);
             if (book is null)
             {
-                return (false, new List<string>() { "Book not found" });
+                return Result.Failure("Book not found");
+                //return (false, new List<string>() { "Book not found" });
             }
 
             book.Title = bookDto.Title;
@@ -112,10 +120,13 @@ namespace BooksIO2026.Service.Services
             {
                 foreach (var error in result.Errors)
                 {
-                    var errors = result.Errors
-                                       .Select(e => e.ErrorMessage)
-                                       .ToList();
-                    return (false, errors);
+                    return Result.Failure(result.Errors
+                                                .Select(e => e.ErrorMessage)
+                                                .ToList());
+                    //var errors = result.Errors
+                    //                   .Select(e => e.ErrorMessage)
+                    //                   .ToList();
+                    //return (false, errors);
                 }
             }
             try
@@ -123,13 +134,16 @@ namespace BooksIO2026.Service.Services
                 if (!_unitOfWork.Books.Exist(book.Title, book.BookId))
                 {
                     _unitOfWork.Save();
-                    return (true, new List<string>());
+                    return Result.Success();
+                    //return (true, new List<string>());
                 }
-                return (false, new List<string>() { "The book already exist!" });
+                return Result.Failure("The book already exist!");
+                //return (false, new List<string>() { "The book already exist!" });
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                return (false, new List<string>() { "Database error" });
+                return Result.Failure(ex.Message);
+                //return (false, new List<string>() { "Database error" });
             }
         }
     }

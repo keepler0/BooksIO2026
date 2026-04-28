@@ -1,5 +1,6 @@
 ﻿using BooksIO2026.Data;
 using BooksIO2026.Entities;
+using BooksIO2026.Service.Common;
 using BooksIO2026.Service.DTOs;
 using BooksIO2026.Service.Interfaces;
 using BooksIO2026.Service.Mappers;
@@ -23,7 +24,7 @@ namespace BooksIO2026.Service.Services
             _authorValidator = authorValidator;
             _unitOfWork = unitOfWork;
         }
-        public (bool Success, List<string> Errors) Add(AuthorCreateDto authorDto)
+        public Result Add(AuthorCreateDto authorDto)
         {
             var author = AuthorMapper.ToAuthorEntity(authorDto);
 
@@ -32,8 +33,8 @@ namespace BooksIO2026.Service.Services
             {
                 foreach (var error in result.Errors)//recorremos los errores de validacion
                 {
-                    var errors = result.Errors.Select(e => e.ErrorMessage).ToList();//los capturamos en una lista de strings
-                    return (false, errors);//retornamos false y la lista de errores para mostrar los errores que se presento
+                    return Result.Failure(result.Errors.Select(e => e.ErrorMessage).ToList());//los capturamos en una lista de strings
+                    //return (false, errors);//retornamos false y la lista de errores para mostrar los errores que se presento
                 }
             }
             if (!_unitOfWork.Authors.Exist(author.FirstName, author.LastName))
@@ -42,31 +43,36 @@ namespace BooksIO2026.Service.Services
                 {
                     _unitOfWork.Authors.Add(author);
                     _unitOfWork.Save();
-                    return (true, new List<string>());
+                    return Result.Success();
+                    //return (true, new List<string>());
                     //de lo contrario, si el autor es valido, lo agregamos a la base de datos y retornamos true y una lista vacia de errores
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
-                    return (false, new List<string>() { "Database error" });
+                    return Result.Failure($"Database error...{ex.Message}");
+                    //return (false, new List<string>() { "Database error" });
                 }
             }
             else
             {
-                return (false, new List<string>() { "Author already exists" });
+                return Result.Failure("Author already exists");
+                //return (false, new List<string>() { "Author already exists" });
             }
         }
 
-        public (bool Success, List<string> Errors) Delete(int authorId)
+        public Result Delete(int authorId)
         {
             try
             {
                 _unitOfWork.Authors.Delete(authorId);
                 _unitOfWork.Save();
-                return (true, new List<string>());
+                return Result.Success();
+                //return (true, new List<string>());
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                return (false, new List<string>() { "Database error" });
+                return Result.Failure(ex.Message);
+                //return (false, new List<string>() { "Database error" });
             }
         }
 
@@ -98,11 +104,13 @@ namespace BooksIO2026.Service.Services
             return null;
         }
 
-        public (bool Success, List<string> Errors) Update(AuthorUpdateDto authorDto)
+        public Result Update(AuthorUpdateDto authorDto)
         {
             //var author = AuthorMapper.ToAuthor(authorDto);
             var author = _unitOfWork.Authors.GetById(authorDto.AuthorId);
-            if (author is null) return (false, new List<string>() { "Author not found" });
+            if (author is null) 
+                return Result.Failure("Author not found");
+            //return (false, new List<string>() { "Author not found" });
             author.FirstName = authorDto.FirstName;
             author.LastName = authorDto.LastName;
             var result = _authorValidator.Validate(author);
@@ -110,10 +118,11 @@ namespace BooksIO2026.Service.Services
             {
                 foreach (var error in result.Errors)
                 {
-                    var errors = result.Errors
-                                       .Select(e => e.ErrorMessage)
-                                       .ToList();
-                    return (false, errors);
+                    //var errors = result.Errors
+                    //                   .Select(e => e.ErrorMessage)
+                    //                   .ToList();
+                    //return (false, errors);
+                    return Result.Failure(result.Errors.Select(e => e.ErrorMessage).ToList());
                 }
             }
             if (!_unitOfWork.Authors.Exist(author.FirstName, author.LastName, author.AuthorId))
@@ -122,16 +131,19 @@ namespace BooksIO2026.Service.Services
                 {
                     //_authorRepository.Update(author);
                     _unitOfWork.Save();
-                    return (true, new List<string>());
+                    return Result.Success();
+                    //return (true, new List<string>());
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
-                    return (false, new List<string>() { "Database error" });
+                    return Result.Failure(ex.Message);
+                    //return (false, new List<string>() { "Database error" });
                 }
             }
             else
             {
-                return (false, new List<string>() { "Author already exist!" });
+                return Result.Failure("Author already exist!");
+                //return (false, new List<string>() { "Author already exist!" });
             }
         }
     }
