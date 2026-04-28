@@ -10,15 +10,15 @@ namespace BooksIO2026.Service.Services
 {
     public class PublisherService : IPublisherService
     {
-        private readonly IPublisherRepository _publisherRepository;
+        //private readonly IPublisherRepository _publisherRepository;
         private readonly IValidator<Publisher> _publisherValidator;
         private readonly IUnitOfWork _unitOfWork;
 
-        public PublisherService(IPublisherRepository publisherRepository,
+        public PublisherService(//IPublisherRepository publisherRepository,
                                 IValidator<Publisher> publisherValidator,
                                 IUnitOfWork unitOfWork)
         {
-            _publisherRepository = publisherRepository;
+            //_publisherRepository = publisherRepository;
             _publisherValidator = publisherValidator;
             _unitOfWork = unitOfWork;
         }
@@ -35,11 +35,11 @@ namespace BooksIO2026.Service.Services
                     return (false, errors);
                 }
             }
-            if (!_publisherRepository.Exist(publisher.Name, publisher.Country))
+            if (!_unitOfWork.Publishers.Exist(publisher.Name, publisher.Country))
             {
                 try
                 {
-                    _publisherRepository.Add(publisher);
+                    _unitOfWork.Publishers.Add(publisher);
                     _unitOfWork.Save();
                     return (true, new List<string>());
                 }
@@ -55,10 +55,10 @@ namespace BooksIO2026.Service.Services
         {
             try
             {
-                if (!_publisherRepository.Exist(null, null, id))
+                if (!_unitOfWork.Publishers.Exist(null, null, id))
                     return (false, new List<string>() { "Publisher not found" });
 
-                _publisherRepository.Delete(id);
+                _unitOfWork.Publishers.Delete(id);
                 _unitOfWork.Save();
                 return (true, new List<string>());
             }
@@ -70,14 +70,14 @@ namespace BooksIO2026.Service.Services
 
         public List<PublisherListDto> GetAll()
         {
-            return _publisherRepository.GetAll()
-                                       .Select(p => PublisherMapper.ToPublisherListDto(p))
-                                       .ToList();
+            return _unitOfWork.Publishers.GetAll()
+                                         .Select(p => PublisherMapper.ToPublisherListDto(p))
+                                         .ToList();
         }
 
         public PublisherDetailDto? GetById(int id)
         {
-            var publisher = _publisherRepository.GetById(id);
+            var publisher = _unitOfWork.Publishers.GetById(id);
             if (publisher is not null)
             {
                 return PublisherMapper.ToPublisherDetailDto(publisher);
@@ -87,7 +87,7 @@ namespace BooksIO2026.Service.Services
 
         public PublisherUpdateDto? GetPublisherForUpdate(int id)
         {
-            var publisher = _publisherRepository.GetById(id);
+            var publisher = _unitOfWork.Publishers.GetById(id);
             if (publisher is not null)
             {
                 return PublisherMapper.ToPublisherUpdateDto(publisher);
@@ -97,7 +97,7 @@ namespace BooksIO2026.Service.Services
 
         public (bool success, List<string> Errors) Update(PublisherUpdateDto publisherDto)
         {
-            var publisher = _publisherRepository.GetById(publisherDto.PublisherId);
+            var publisher = _unitOfWork.Publishers.GetById(publisherDto.PublisherId);
             if (publisher is null) return (false, new List<string>() { "Publisher not found" });
             publisher.Name = publisherDto.Name;
             publisher.Country = publisherDto.Country;
@@ -115,7 +115,7 @@ namespace BooksIO2026.Service.Services
                     return (false, errors);
                 }
             }
-            if (!_publisherRepository.Exist(publisherDto.Name, publisherDto.Country, publisherDto.PublisherId))
+            if (!_unitOfWork.Publishers.Exist(publisherDto.Name, publisherDto.Country, publisherDto.PublisherId))
             {
                 try
                 {

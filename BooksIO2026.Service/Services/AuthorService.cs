@@ -1,5 +1,4 @@
 ﻿using BooksIO2026.Data;
-using BooksIO2026.Data.Interfaces;
 using BooksIO2026.Entities;
 using BooksIO2026.Service.DTOs;
 using BooksIO2026.Service.Interfaces;
@@ -10,14 +9,17 @@ namespace BooksIO2026.Service.Services
 {
     public class AuthorService : IAuthorService
     {
-        private readonly IAuthorRepository _authorRepository;
+        //quitmos el IAuthorRepositorio ya que pasamos la responsabilidad a UNIT OF WORK por lo tanto usamos _unitOfWork.Authors para usar el repositorio
+
+
+        //private readonly IAuthorRepository _authorRepository;
         private readonly IValidator<Author> _authorValidator;
         private readonly IUnitOfWork _unitOfWork;
-        public AuthorService(IAuthorRepository authorRepository,
+        public AuthorService(//IAuthorRepository authorRepository,
                               IUnitOfWork unitOfWork,
                               IValidator<Author> authorValidator)
         {
-            _authorRepository = authorRepository;
+            //_authorRepository = authorRepository;
             _authorValidator = authorValidator;
             _unitOfWork = unitOfWork;
         }
@@ -34,11 +36,11 @@ namespace BooksIO2026.Service.Services
                     return (false, errors);//retornamos false y la lista de errores para mostrar los errores que se presento
                 }
             }
-            if (!_authorRepository.Exist(author.FirstName, author.LastName))
+            if (!_unitOfWork.Authors.Exist(author.FirstName, author.LastName))
             {
                 try
                 {
-                    _authorRepository.Add(author);
+                    _unitOfWork.Authors.Add(author);
                     _unitOfWork.Save();
                     return (true, new List<string>());
                     //de lo contrario, si el autor es valido, lo agregamos a la base de datos y retornamos true y una lista vacia de errores
@@ -58,7 +60,7 @@ namespace BooksIO2026.Service.Services
         {
             try
             {
-                _authorRepository.Delete(authorId);
+                _unitOfWork.Authors.Delete(authorId);
                 _unitOfWork.Save();
                 return (true, new List<string>());
             }
@@ -71,14 +73,14 @@ namespace BooksIO2026.Service.Services
         //Como ahora usamos AuthorListDto para mostrar la lista de autores tenemos que crear los objetos AuthorListDto con el metodo Select de Linq
         public List<AuthorListDto> GetAll()
         {
-            return _authorRepository.GetAll()
-                                    .Select(a => AuthorMapper.ToAuthorListDto(a))
-                                    .ToList();
+            return _unitOfWork.Authors.GetAll()
+                                      .Select(a => AuthorMapper.ToAuthorListDto(a))
+                                      .ToList();
         }
 
         public AuthorUpdateDto? GetAuthorForUpdate(int id)
         {
-            var author = _authorRepository.GetById(id);
+            var author = _unitOfWork.Authors.GetById(id);
             if (author is not null)
             {
                 return AuthorMapper.ToAuthorUpdateDto(author);
@@ -88,7 +90,7 @@ namespace BooksIO2026.Service.Services
 
         public AuthorDetailDto? GetById(int id)
         {
-            var author = _authorRepository.GetById(id);
+            var author = _unitOfWork.Authors.GetById(id);
             if (author is not null)
             {
                 return AuthorMapper.ToAuthorDetailDto(author);
@@ -99,7 +101,7 @@ namespace BooksIO2026.Service.Services
         public (bool Success, List<string> Errors) Update(AuthorUpdateDto authorDto)
         {
             //var author = AuthorMapper.ToAuthor(authorDto);
-            var author = _authorRepository.GetById(authorDto.AuthorId);
+            var author = _unitOfWork.Authors.GetById(authorDto.AuthorId);
             if (author is null) return (false, new List<string>() { "Author not found" });
             author.FirstName = authorDto.FirstName;
             author.LastName = authorDto.LastName;
@@ -114,7 +116,7 @@ namespace BooksIO2026.Service.Services
                     return (false, errors);
                 }
             }
-            if (!_authorRepository.Exist(author.FirstName, author.LastName, author.AuthorId))
+            if (!_unitOfWork.Authors.Exist(author.FirstName, author.LastName, author.AuthorId))
             {
                 try
                 {
