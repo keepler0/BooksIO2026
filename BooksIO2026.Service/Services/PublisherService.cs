@@ -1,5 +1,4 @@
 ﻿using BooksIO2026.Data;
-using BooksIO2026.Data.Interfaces;
 using BooksIO2026.Entities;
 using BooksIO2026.Service.Common;
 using BooksIO2026.Service.DTOs.Publisher;
@@ -58,12 +57,14 @@ namespace BooksIO2026.Service.Services
 
         public Result Delete(int id)
         {
+            if (!_unitOfWork.Publishers.Exist(null, null, id))
+                return Result.Failure("Publisher not found");
+                //return (false, new List<string>() { "Publisher not found" });
+
+            if (_unitOfWork.Publishers.HasBooks(id))
+                return Result.Failure("Delete denied...the publisher has associated books");
             try
             {
-                if (!_unitOfWork.Publishers.Exist(null, null, id))
-                    return Result.Failure("Publisher not found");
-                    //return (false, new List<string>() { "Publisher not found" });
-
                 _unitOfWork.Publishers.Delete(id);
                 _unitOfWork.Save();
                 return Result.Success();
@@ -86,35 +87,31 @@ namespace BooksIO2026.Service.Services
         public PublisherDetailDto? GetById(int id)
         {
             var publisher = _unitOfWork.Publishers.GetById(id);
-            if (publisher is not null)
-            {
-                return PublisherMapper.ToPublisherDetailDto(publisher);
-            }
-            return null;
+            //if (publisher is not null)
+            //{
+            //    return PublisherMapper.ToPublisherDetailDto(publisher);
+            //}
+            //return null;
+            return publisher is not null ? PublisherMapper.ToPublisherDetailDto(publisher) : null;
         }
 
         public PublisherUpdateDto? GetPublisherForUpdate(int id)
         {
             var publisher = _unitOfWork.Publishers.GetById(id);
-            if (publisher is not null)
-            {
-                return PublisherMapper.ToPublisherUpdateDto(publisher);
-            }
-            return null;
+            //if (publisher is not null)
+            //{
+            //    return PublisherMapper.ToPublisherUpdateDto(publisher);
+            //}
+            return publisher is not null ? PublisherMapper.ToPublisherUpdateDto(publisher) : null;
         }
 
         public Result Update(PublisherUpdateDto publisherDto)
         {
             var publisher = _unitOfWork.Publishers.GetById(publisherDto.PublisherId);
             if (publisher is null)
-                return Result.Failure("Publisher not found");
-                //return (false, new List<string>() { "Publisher not found" });
-            publisher.Name = publisherDto.Name;
-            publisher.Country = publisherDto.Country;
-            publisher.FoundedDate = publisherDto.FoundedDate;
-            publisher.Email = publisherDto.Email;
-            publisher.IsActive = publisherDto.IsActive;
-            var result = _publisherValidator.Validate(publisher);
+                return Result.Failure("Publisher not found");//return (false, new List<string>() { "Publisher not found" });
+            var publisherToValidate = PublisherMapper.ToPublisher(publisherDto);
+            var result = _publisherValidator.Validate(publisherToValidate);
             if (!result.IsValid)
             {
                 foreach (var error in result.Errors)
@@ -128,24 +125,30 @@ namespace BooksIO2026.Service.Services
                     //return (false, errors);
                 }
             }
-            if (!_unitOfWork.Publishers.Exist(publisherDto.Name, 
-                                              publisherDto.Country, 
+            publisher.Name = publisherDto.Name;
+            publisher.Country = publisherDto.Country;
+            publisher.FoundedDate = publisherDto.FoundedDate;
+            publisher.Email = publisherDto.Email;
+            publisher.IsActive = publisherDto.IsActive;
+            
+            if (_unitOfWork.Publishers.Exist(publisherDto.Name,
+                                              publisherDto.Country,
                                               publisherDto.PublisherId))
             {
-                try
-                {
-                    _unitOfWork.Save();
-                    return Result.Success();
-                    //return (true, new List<string>());
-                }
-                catch (Exception ex)
-                {
-                    return Result.Failure(ex.Message);
-                    //return (false, new List<string>() { "Database error" });
-                }
+                return Result.Failure("Publisher already exist!");
+                //return (false, new List<string>() { "Publisher already exist!" });
             }
-            return Result.Failure("Publisher already exist!");
-            //return (false, new List<string>() { "Publisher already exist!" });
+            try
+            {
+                _unitOfWork.Save();
+                return Result.Success();
+                //return (true, new List<string>());
+            }
+            catch (Exception ex)
+            {
+                return Result.Failure(ex.Message);
+                //return (false, new List<string>() { "Database error" });
+            }
         }
     }
 }

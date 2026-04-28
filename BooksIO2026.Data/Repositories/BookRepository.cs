@@ -25,16 +25,19 @@ namespace BooksIO2026.Data.Repositories
             _context.Books.Remove(bookToDelete);
         }
 
-        public bool Exist(string title, int? id = null)
+        public bool ExistSameName(string title, int? id = null)
         {
-            Book? book;
-            if (id.HasValue)
-            {
-                book = _context.Books.FirstOrDefault(b => b.Title == title && 
-                                                          b.BookId == id.Value);
-            }
-            book = _context.Books.FirstOrDefault(b => b.Title == title);
-            return book is not null;
+            //Book? book;
+            //if (id.HasValue)
+            //{
+            //    book = _context.Books.FirstOrDefault(b => b.Title == title && 
+            //                                              b.BookId != id.Value);
+            //}
+            //book = _context.Books.FirstOrDefault(b => b.Title == title);
+            //return book is not null;
+            var book= _context.Books.FirstOrDefault(b => b.Title  == title &&
+                                                         b.BookId != id);
+            return book != null;
         }
 
         public List<Book> GetAll()

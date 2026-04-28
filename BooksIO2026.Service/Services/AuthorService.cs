@@ -37,31 +37,35 @@ namespace BooksIO2026.Service.Services
                     //return (false, errors);//retornamos false y la lista de errores para mostrar los errores que se presento
                 }
             }
-            if (!_unitOfWork.Authors.Exist(author.FirstName, author.LastName))
-            {
-                try
-                {
-                    _unitOfWork.Authors.Add(author);
-                    _unitOfWork.Save();
-                    return Result.Success();
-                    //return (true, new List<string>());
-                    //de lo contrario, si el autor es valido, lo agregamos a la base de datos y retornamos true y una lista vacia de errores
-                }
-                catch (Exception ex)
-                {
-                    return Result.Failure($"Database error...{ex.Message}");
-                    //return (false, new List<string>() { "Database error" });
-                }
-            }
-            else
-            {
+
+            if (_unitOfWork.Authors.ExistSameName(author.FirstName, author.LastName))
                 return Result.Failure("Author already exists");
-                //return (false, new List<string>() { "Author already exists" });
+
+            try
+            {
+                _unitOfWork.Authors.Add(author);
+                _unitOfWork.Save();
+                return Result.Success();
+                //return (true, new List<string>());
+                //de lo contrario, si el autor es valido, lo agregamos a la base de datos y retornamos true y una lista vacia de errores
             }
+            catch (Exception ex)
+            {
+                return Result.Failure($"Database error...{ex.Message}");
+                //return (false, new List<string>() { "Database error" });
+            }
+
         }
 
         public Result Delete(int authorId)
         {
+            var authorInDb=_unitOfWork.Authors.GetById(authorId);
+            if (authorInDb is null)
+                return Result.Failure("Author not found!");
+
+            if (_unitOfWork.Authors.HasBooks(authorId))
+                return Result.Failure("Delete denied...author with associated books");
+
             try
             {
                 _unitOfWork.Authors.Delete(authorId);
@@ -106,14 +110,8 @@ namespace BooksIO2026.Service.Services
 
         public Result Update(AuthorUpdateDto authorDto)
         {
-            //var author = AuthorMapper.ToAuthor(authorDto);
-            var author = _unitOfWork.Authors.GetById(authorDto.AuthorId);
-            if (author is null) 
-                return Result.Failure("Author not found");
-            //return (false, new List<string>() { "Author not found" });
-            author.FirstName = authorDto.FirstName;
-            author.LastName = authorDto.LastName;
-            var result = _authorValidator.Validate(author);
+            var authorToValidate = AuthorMapper.ToAuthorEntity(authorDto);
+            var result = _authorValidator.Validate(authorToValidate);
             if (!result.IsValid)
             {
                 foreach (var error in result.Errors)
@@ -125,25 +123,27 @@ namespace BooksIO2026.Service.Services
                     return Result.Failure(result.Errors.Select(e => e.ErrorMessage).ToList());
                 }
             }
-            if (!_unitOfWork.Authors.Exist(author.FirstName, author.LastName, author.AuthorId))
-            {
-                try
-                {
-                    //_authorRepository.Update(author);
-                    _unitOfWork.Save();
-                    return Result.Success();
-                    //return (true, new List<string>());
-                }
-                catch (Exception ex)
-                {
-                    return Result.Failure(ex.Message);
-                    //return (false, new List<string>() { "Database error" });
-                }
-            }
-            else
-            {
+            var author = _unitOfWork.Authors.GetById(authorDto.AuthorId);
+            if (author is null)
+                return Result.Failure("Author not found");
+            //return (false, new List<string>() { "Author not found" });
+            author.FirstName = authorDto.FirstName;
+            author.LastName = authorDto.LastName;
+            
+            if (_unitOfWork.Authors.ExistSameName(author.FirstName, author.LastName, author.AuthorId))
                 return Result.Failure("Author already exist!");
                 //return (false, new List<string>() { "Author already exist!" });
+            try
+            {
+                //_authorRepository.Update(author);
+                _unitOfWork.Save();
+                return Result.Success();
+                //return (true, new List<string>());
+            }
+            catch (Exception ex)
+            {
+                return Result.Failure(ex.Message);
+                //return (false, new List<string>() { "Database error" });
             }
         }
     }

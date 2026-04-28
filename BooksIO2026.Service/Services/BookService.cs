@@ -36,7 +36,7 @@ namespace BooksIO2026.Service.Services
                     //return (false, errors);
                 }
             }
-            if (_unitOfWork.Books.Exist(bookDto.Title))
+            if (_unitOfWork.Books.ExistSameName(bookDto.Title))
             {
                 return Result.Failure("The book already exist!");
                 //return (false, new List<string>() { "The book already exist!" });
@@ -85,18 +85,13 @@ namespace BooksIO2026.Service.Services
         public BookUpdateDto? GetBookForUpdate(int id)
         {
             var book = _unitOfWork.Books.GetById(id);
-            if (book is not null)
-            {
-                return BookMapper.ToBookUpdateDto(book);
-            }
-            return null;
+            return book is not null ? BookMapper.ToBookUpdateDto(book) : null;
         }
 
         public BookDetailDto? GetById(int id)
         {
             var book = _unitOfWork.Books.GetById(id);
-            if (book is not null) return BookMapper.ToBookDetailDto(book);
-            return null;
+            return book is not null ? BookMapper.ToBookDetailDto(book) : null;
         }
 
         public Result Update(BookUpdateDto bookDto)
@@ -107,15 +102,8 @@ namespace BooksIO2026.Service.Services
                 return Result.Failure("Book not found");
                 //return (false, new List<string>() { "Book not found" });
             }
-
-            book.Title = bookDto.Title;
-            book.Price = bookDto.Price;
-            book.PublishedDate = bookDto.PublishedDate;
-            book.PublisherId = bookDto.PublisherId;
-            book.AuthorId = bookDto.AuthorId;
-            book.IsActive = bookDto.IsActive;
-
-            var result = _bookValidator.Validate(book);
+            var bookToValidate = BookMapper.ToBookEntity(bookDto);
+            var result = _bookValidator.Validate(bookToValidate);
             if (!result.IsValid)
             {
                 foreach (var error in result.Errors)
@@ -129,16 +117,23 @@ namespace BooksIO2026.Service.Services
                     //return (false, errors);
                 }
             }
-            try
+            book.Title = bookDto.Title;
+            book.Price = bookDto.Price;
+            book.PublishedDate = bookDto.PublishedDate;
+            book.PublisherId = bookDto.PublisherId;
+            book.AuthorId = bookDto.AuthorId;
+            book.IsActive = bookDto.IsActive;
+
+            if (_unitOfWork.Books.ExistSameName(book.Title, book.BookId))
             {
-                if (!_unitOfWork.Books.Exist(book.Title, book.BookId))
-                {
-                    _unitOfWork.Save();
-                    return Result.Success();
-                    //return (true, new List<string>());
-                }
                 return Result.Failure("The book already exist!");
                 //return (false, new List<string>() { "The book already exist!" });
+            }
+            try
+            {
+                _unitOfWork.Save();
+                return Result.Success();
+                //return (true, new List<string>());
             }
             catch (Exception ex)
             {

@@ -10,5 +10,6 @@ namespace BooksIO2026.Data.Interfaces
         void Update(Publisher publisher);
         void Add(Publisher publisher);
         bool Exist(string? Name=null, string? Country=null, int? id = null);
+        bool HasBooks(int id);
     }
 }

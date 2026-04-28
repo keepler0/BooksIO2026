@@ -57,6 +57,11 @@ namespace BooksIO2026.Data.Repositories
             return _context.Publishers.Find(id);
         }
 
+        public bool HasBooks(int id)
+        {
+            return _context.Books.Any(b => b.PublisherId == id);
+        }
+
         public void Update(Publisher publisher)
         {
             _context.Publishers.Update(publisher);
