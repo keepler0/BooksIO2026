@@ -46,7 +46,7 @@ namespace BooksIO2026.Data.Migrations
                         .IsUnique()
                         .HasDatabaseName("IX_Authors_FirstName_LastName");
 
-                    b.ToTable("Authors");
+                    b.ToTable("Authors", (string)null);
                 });
 
             modelBuilder.Entity("BooksIO2026.Entities.Book", b =>
@@ -88,7 +88,7 @@ namespace BooksIO2026.Data.Migrations
                     b.HasIndex("Title", "AuthorId")
                         .IsUnique();
 
-                    b.ToTable("Books");
+                    b.ToTable("Books", (string)null);
 
                     b.HasData(
                         new
@@ -166,7 +166,7 @@ namespace BooksIO2026.Data.Migrations
                         .IsUnique()
                         .HasDatabaseName("IX_Publishers_Name_Country");
 
-                    b.ToTable("Publishers");
+                    b.ToTable("Publishers", (string)null);
                 });
 
             modelBuilder.Entity("BooksIO2026.Entities.Book", b =>
