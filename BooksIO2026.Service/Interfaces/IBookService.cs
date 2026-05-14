@@ -6,14 +6,17 @@ namespace BooksIO2026.Service.Interfaces
 {
     public interface IBookService
     {
-        List<BookListDto> GetAll();
-        BookDetailDto? GetById(int id);
-        //(bool Success, List<string> Errors) Add(BookCreateDto bookDto);
-        //(bool Success, List<string> Errors) Update(BookUpdateDto bookDto);
-        //(bool Success, List<string> Errors) Delete(int bookId);
+        Result<List<BookListDto>> GetAll();
+        Result<BookUpdateDto> GetBookForUpdate(int id);
+        Result<BookDetailDto> GetById(int id);
         Result Add(BookCreateDto bookDto);
         Result Update(BookUpdateDto bookDto);
         Result Delete(int bookId);
-        BookUpdateDto? GetBookForUpdate(int id);
+        //List<BookListDto> GetAll();
+        //BookUpdateDto? GetBookForUpdate(int id);
+        //BookDetailDto? GetById(int id);
+        //(bool Success, List<string> Errors) Add(BookCreateDto bookDto);
+        //(bool Success, List<string> Errors) Update(BookUpdateDto bookDto);
+        //(bool Success, List<string> Errors) Delete(int bookId);
     }
 }
