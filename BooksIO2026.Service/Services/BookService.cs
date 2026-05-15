@@ -90,6 +90,36 @@ namespace BooksIO2026.Service.Services
             return Result<BookUpdateDto>.Success(BookMapper.ToBookUpdateDto(book));
         }
 
+        public Result<List<BookListDto>> GetBooksByPublisher(int id)
+        {
+            var query = _unitOfWork.Books.Query().Where(b => b.PublisherId == id).Select(b => new BookListDto
+            {
+                BookId = b.BookId,
+                Title = b.Title,
+                Price = b.Price,
+                IsActive = b.IsActive,
+                AuthorName = $"{b.Author!.FirstName} {b.Author!.LastName}",
+
+            }).ToList();
+            if (query is null) return Result<List<BookListDto>>.Failure("Data not found");
+            return Result<List<BookListDto>>.Success(query);
+        }
+
+        public Result<List<BooksGroupedByPublisherDto>> GetBooksGroupedByPublisher()
+        {
+            var query = _unitOfWork.Books.Query().GroupBy(b => new { b.PublisherId, b.Publisher!.Name })
+                .Select(g => new BooksGroupedByPublisherDto
+                {
+                    PublisherId = g.Key.PublisherId,
+                    PublisherName = g.Key.Name,
+                    TotalCount = g.Count(),
+                    //TotalStock=g.Sum(b=>b.Stock),
+                    AveragePrice = g.Average(b => b.Price)
+                }).ToList();
+            if (query is null) return Result<List<BooksGroupedByPublisherDto>>.Failure("Data not found!");
+            return Result<List<BooksGroupedByPublisherDto>>.Success(query);
+        }
+
         public Result<BookDetailDto> GetById(int id)
         {
             var book = _unitOfWork.Books.GetById(id);
@@ -102,6 +132,21 @@ namespace BooksIO2026.Service.Services
             var book= _unitOfWork.Books.GetById(id);
             if (book is null) return Result<BookDetailDto>.Failure("Book not found");
             return Result<BookDetailDto>.Success(BookMapper.ToBookDetailDto(book));
+        }
+
+        public Result<List<BookListDto>> GetMoreExpensiveBooks()
+        {
+            var query= _unitOfWork.Books.Query().OrderByDescending(b=>b.Price).Take(10).Select(b=>new BookListDto
+            {
+                BookId = b.BookId,
+                Title = b.Title,
+                Price = b.Price,
+                IsActive = b.IsActive,
+                AuthorName = $"{b.Author!.FirstName} {b.Author!.LastName}",
+                PublisherName = b.Publisher!.Name
+            }).ToList();
+            if (query is null) return Result<List<BookListDto>>.Failure("Data not found!");
+            return Result<List<BookListDto>>.Success(query);
         }
 
         public Result Update(BookUpdateDto bookDto)

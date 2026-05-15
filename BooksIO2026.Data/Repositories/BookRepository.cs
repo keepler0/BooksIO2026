@@ -54,6 +54,15 @@ namespace BooksIO2026.Data.Repositories
             return bookInDb;
         }
 
+        public IQueryable<Book> Query()
+        {
+            return _context.Books
+                           .Include(b=>b.Author)
+                           .Include(b=>b.Publisher)
+                           .AsNoTracking()
+                           .AsQueryable();
+        }
+
         public void Update(Book book)
         {
             _context.Books.Update(book);

@@ -323,6 +323,8 @@ namespace BooksIO2026.Consola
                     Console.WriteLine("[3] Update an book");
                     Console.WriteLine("[4] Delete an book");
                     Console.WriteLine("[5] View book details");
+                    Console.WriteLine("[6] Books grouped by publisher");
+                    Console.WriteLine("[7] Top 10 more expensive books");
                     Console.WriteLine("[0] Exit");
                     Console.Write("Select an option: ");
                     var option = Console.ReadLine();
@@ -346,9 +348,145 @@ namespace BooksIO2026.Consola
                         case "5":
                             ShowBookDetails(bookService);
                             break;
+                        case "6":
+                            ShowBooksGroupedByPublisher(bookService);
+                            break;
+                        case "7":
+                            ShowMoreExpensiveBooks(bookService);
+                            break;
                     }
                 } while (true);
             }
+        }
+
+        private static void ShowMoreExpensiveBooks(IBookService bookService)
+        {
+            Console.Clear();
+            Console.WriteLine("=== TOP 10 Books More Expensive ===\n");
+
+            var resultT = bookService.GetMoreExpensiveBooks();
+
+            if (resultT.Isfailure)
+            {
+                ShowErrors(resultT.Errors);
+            }
+            var books = resultT.Value;
+            Console.WriteLine(
+                $"{"ID",-5} {"TITLE",-30} {"AUTHOR",-25} {"PUBLISHER",-20} {"PRICE",10}");
+
+            Console.WriteLine(new string('-', 95));
+
+            foreach (var book in books!)
+            {
+                Console.WriteLine(
+                    $"{book.BookId,-5} " +
+                    $"{book.Title,-30} " +
+                    $"{book.AuthorName,-25} " +
+                    $"{book.PublisherName,-20} " +
+                    $"{book.Price,10}"
+                );
+            }
+            CleanScreen();
+        }
+
+        private static void ShowBooksGroupedByPublisher(IBookService bookService)
+        {
+            Console.Clear();
+            Console.WriteLine("BOOKS GROUPED BY PUBLISHER");
+            Console.WriteLine(new string('-', 90));
+
+            var resultT = bookService.GetBooksGroupedByPublisher();
+
+            if (!resultT.IsSuccess || resultT.Value == null || !resultT.Value.Any())
+            {
+                Console.WriteLine("No records found.");
+                Console.ReadKey();
+                return;
+            }
+
+            var groupedBooks = resultT.Value.ToList();
+
+            Console.WriteLine(
+                $"{"#",-5}" +
+                $"{"Publisher",-25}" +
+                $"{"Books",10}" +
+                $"{"Stock",10}");
+
+            Console.WriteLine(new string('-', 90));
+
+            for (int i = 0; i < groupedBooks.Count; i++)
+            {
+                var item = groupedBooks[i];
+
+                Console.WriteLine(
+                    $"{i + 1,-5}" +
+                    $"{item.PublisherName,-25}" +
+                    $"{item.TotalCount,10}" +
+                    //$"{item.TotalStock,10}");
+                    $"{item.AveragePrice,10}");
+            }
+
+            Console.WriteLine(new string('-', 90));
+            Console.WriteLine();
+            Console.Write("Would you like to view details for a publisher? (Y/N): ");
+
+            var answer = Console.ReadLine()?.Trim().ToUpper();
+
+            if (answer != "Y")
+                return;
+
+            Console.Write("Enter publisher number: ");
+
+            if (!int.TryParse(Console.ReadLine(), out int option) ||
+                option < 1 || option > groupedBooks.Count)
+            {
+                Console.WriteLine("Invalid option.");
+                Console.ReadKey();
+                return;
+            }
+
+            var selectedPublisherId = groupedBooks[option - 1].PublisherId;
+            var selectedPublisherName = groupedBooks[option - 1].PublisherName;
+
+            ShowPublisherBooksDetail(bookService, selectedPublisherId, selectedPublisherName);
+        }
+
+        private static void ShowPublisherBooksDetail(IBookService bookService, int selectedPublisherId, string selectedPublisherName)
+        {
+            Console.Clear();
+            Console.WriteLine($"BOOK DETAILS - {selectedPublisherName.ToUpper()}");
+            Console.WriteLine(new string('-', 100));
+
+            var resultT = bookService.GetBooksByPublisher(selectedPublisherId);
+
+            if (!resultT.IsSuccess || resultT.Value == null || !resultT.Value.Any())
+            {
+                Console.WriteLine("No books found for this publisher.");
+                Console.ReadKey();
+                return;
+            }
+
+            var books = resultT.Value;
+
+            Console.WriteLine(
+                $"{"Title",-40}" +
+                $"{"Author",-25}" +
+                $"{"Price",15}" +
+                $"{"Stock",10}");
+
+            Console.WriteLine(new string('-', 100));
+
+            foreach (var book in books)
+            {
+                Console.WriteLine(
+                    $"{book.Title,-40}" +
+                    $"{book.AuthorName,-25}" +
+                    $"{book.Price,15}");
+                    //$"{book.Stock,10}");
+            }
+
+            Console.WriteLine(new string('-', 100));
+            Console.ReadKey();
         }
 
         private static void ShowBookDetails(IBookService bookService)
