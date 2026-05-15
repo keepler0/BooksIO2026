@@ -1,4 +1,6 @@
-﻿namespace BooksIO2026.Service.DTOs.Publisher
+﻿using BooksIO2026.Service.DTOs.Book;
+
+namespace BooksIO2026.Service.DTOs.Publisher
 {
     public class PublisherDetailDto
     {
@@ -8,5 +10,6 @@
         public DateTime FoundedDate { get; set; }
         public string? Email { get; set; }
         public bool IsActive { get; set; }
+        public List<BookListDto> Books { get; set; } = [];
     }
 }

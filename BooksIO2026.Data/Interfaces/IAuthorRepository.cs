@@ -5,6 +5,7 @@ namespace BooksIO2026.Data.Interfaces
     public interface IAuthorRepository
     {
         List<Author> GetAll();
+        IQueryable<Author> Query();
         Author? GetById(int id);
         void Delete(int id);
         void Update(Author author);

@@ -55,7 +55,7 @@ namespace BooksIO2026.Consola
                     Console.WriteLine("[2] Add publisher");
                     Console.WriteLine("[3] Update publisher");
                     Console.WriteLine("[4] Delete publisher");
-                    Console.WriteLine("[5] Show publisher data");
+                    Console.WriteLine("[5] View publisher details");
                     Console.WriteLine("[0] Exit");
                     Console.Write("Select an option: ");
                     var option = Console.ReadLine();
@@ -87,23 +87,84 @@ namespace BooksIO2026.Consola
         private static void ShowPublisherData(IPublisherService publisherService)
         {
             Console.Clear();
-            ShowPublishers(publisherService);
-            Console.Write("Select an ID to delete: ");
-            var id = int.Parse(Console.ReadLine()!);
-            var publisherResult = publisherService.GetById(id);
-            if (publisherResult.Isfailure)
+            Console.WriteLine("=== Publisher Details ===\n");
+
+            var publishersResult = publisherService.GetAll();
+
+            if (publishersResult.Isfailure)
             {
-                ShowErrors(publisherResult.Errors);
+                ShowErrors(publishersResult.Errors);
+                CleanScreen();
                 return;
             }
-            var publisherDto = publisherResult.Value!;
-            var email = string.IsNullOrWhiteSpace(publisherDto.Email) ? "Email no disponible"
-                                                                      : publisherDto.Email;
-            var isActiveMessage = publisherDto.IsActive ? "Active"
-                                                        : "Inactive";
+
+            foreach (var publisher in publishersResult.Value!)
+            {
+                Console.WriteLine($"{publisher.PublisherId} - {publisher.Name}");
+            }
+
+            Console.WriteLine();
+
+            int publisherId;
+            while (true)
+            {
+                Console.Write("Select a Publisher ID (0 to quit): ");
+                var input = Console.ReadLine();
+
+                if (!int.TryParse(input, out publisherId))
+                {
+                    Console.WriteLine("You must enter a number.");
+                    continue;
+                }
+                if (publisherId == 0) return;
+                var exists = publishersResult.Value!.Any(p => p.PublisherId == publisherId);
+
+                if (!exists)
+                {
+                    Console.WriteLine("The ID does not correspond to a listed publisher.");
+                    continue;
+                }
+
+                break;
+            }
+
+            var result = publisherService.GetPublisherDetails(publisherId);
+
             Console.Clear();
-            Console.WriteLine($"ID: {publisherDto.PublisherId}\nName: {publisherDto.Name}\nFounded date: {publisherDto.FoundedDate.ToString("dd,MM,YYYY")}\nEmail: {email}\nIs active?: {isActiveMessage}");
-            CleanScreen();
+            Console.WriteLine("=== Publisher Details ===\n");
+
+            if (result.Isfailure)
+            {
+                ShowErrors(result.Errors);
+                Console.ReadLine();
+            }
+            else
+            {
+                var publisher = result.Value!;
+
+                Console.WriteLine($"Id: {publisher.PublisherId}");
+                Console.WriteLine($"Name: {publisher.Name}");
+                Console.WriteLine($"Country: {publisher.Country}");
+                Console.WriteLine($"Founded Date: {publisher.FoundedDate:dd/MM/yyyy}");
+                Console.WriteLine($"Email: {publisher.Email ?? "Not provided"}");
+                Console.WriteLine();
+
+                Console.WriteLine("--- BOOKS ---");
+
+                if (!publisher.Books.Any())
+                {
+                    Console.WriteLine("No associated books.");
+                }
+                else
+                {
+                    foreach (var book in publisher.Books)
+                    {
+                        Console.WriteLine($"{book.BookId} - {book.Title}");
+                    }
+                }
+            }
+            Console.WriteLine("\nPress any key to continue...");
+            Console.ReadKey();
         }
 
         private static void DeletePublisher(IPublisherService publisherService)
@@ -261,7 +322,7 @@ namespace BooksIO2026.Consola
                     Console.WriteLine("[2] Add new book");
                     Console.WriteLine("[3] Update an book");
                     Console.WriteLine("[4] Delete an book");
-                    Console.WriteLine("[5] Show book data");
+                    Console.WriteLine("[5] View book details");
                     Console.WriteLine("[0] Exit");
                     Console.Write("Select an option: ");
                     var option = Console.ReadLine();
@@ -285,7 +346,6 @@ namespace BooksIO2026.Consola
                         case "5":
                             ShowBookDetails(bookService);
                             break;
-
                     }
                 } while (true);
             }
@@ -297,7 +357,7 @@ namespace BooksIO2026.Consola
             ShowBooks(bookService);
             Console.Write("Select an ID: ");
             var id = int.Parse(Console.ReadLine()!);
-            var bookResult = bookService.GetById(id);
+            var bookResult = bookService.GetDetail(id);
             if (bookResult.Isfailure)
             {
                 ShowErrors(bookResult.Errors);
@@ -307,7 +367,7 @@ namespace BooksIO2026.Consola
             var isActiveMessage = bookDto.IsActive ? "Yes"
                                                    : "No";
             Console.Clear();
-            Console.WriteLine($" ID: {bookDto.BookId}\n Title: {bookDto.Title}\n Price: ${bookDto.Price}\n Published date: {bookDto.PublishedDate.ToString("dd,MM,yyyy")}\n Author: {bookDto.AuthorName}\n Publisher: {bookDto.PublisherName}\n Available?: {isActiveMessage}");
+            Console.WriteLine($" ID: {bookDto.BookId}\n Title: {bookDto.Title}\n Price: ${bookDto.Price}\n Published date: {bookDto.PublishedDate.ToShortDateString()}\n Author: {bookDto.AuthorName}\n Publisher: {bookDto.PublisherName}\n Available?: {isActiveMessage}");
             CleanScreen();
         }
 
@@ -512,6 +572,7 @@ namespace BooksIO2026.Consola
                     Console.WriteLine("[2] Add author");
                     Console.WriteLine("[3] Update author");
                     Console.WriteLine("[4] Delete author");
+                    Console.WriteLine("[5] View author details");
                     Console.WriteLine("[0] Exit");
                     Console.Write("Select an option: ");
                     var option = Console.ReadLine();
@@ -532,10 +593,88 @@ namespace BooksIO2026.Consola
                         case "4":
                             DeleteAuthor(authorService);
                             break;
-
+                        case "5":
+                            ShowAuthorDetails(authorService);
+                            break;
                     }
                 } while (true);
             }
+        }
+
+        private static void ShowAuthorDetails(IAuthorService authorService)
+        {
+            Console.Clear();
+            Console.WriteLine("Author's Details");
+
+            var authorsResult = authorService.GetAll();
+
+            if (authorsResult.Isfailure)
+            {
+                ShowErrors(authorsResult.Errors);
+            }
+
+            foreach (var author in authorsResult.Value!)
+            {
+                Console.WriteLine($"{author.AuthorId,2} - {author.FullName}");
+            }
+
+            Console.WriteLine();
+
+            int authorId;
+            while (true)
+            {
+                Console.Write("Select An Author ID to view details (0 to quit): ");
+                var input = Console.ReadLine();
+
+                if (!int.TryParse(input, out authorId))
+                {
+                    Console.WriteLine("You must enter a number.");
+                    continue;
+                }
+                if (authorId == 0) return;
+                var exists = authorsResult.Value!.Any(a => a.AuthorId == authorId);
+
+                if (!exists)
+                {
+                    Console.WriteLine("The ID does not correspond to a listed author.");
+                    continue;
+                }
+
+                break;
+            }
+
+            var result = authorService.GetAuthorDetails(authorId);
+
+            Console.Clear();
+            Console.WriteLine("=== Author Details ===\n");
+
+            if (result.Isfailure)
+            {
+                ShowErrors(result.Errors);
+                CleanScreen();
+                return;
+
+            }
+            var authorDto = result.Value!;
+
+            Console.WriteLine($"Id: {authorDto.AuthorId}");
+            Console.WriteLine($"FullName: {authorDto.FirstName} {authorDto.LastName}");
+            Console.WriteLine();
+
+            Console.WriteLine("--- Books ---");
+
+            if (!authorDto.books.Any())
+            {
+                Console.WriteLine("No associated books.");
+            }
+            else
+            {
+                foreach (var book in authorDto.books)
+                {
+                    Console.WriteLine($"{book.BookId} - {book.Title}");
+                }
+            }
+            CleanScreen();
         }
 
         private static void UpdateAuthor(IAuthorService authorService)

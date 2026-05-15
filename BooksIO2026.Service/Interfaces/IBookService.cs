@@ -1,5 +1,4 @@
 ﻿using BooksIO2026.Service.Common;
-using BooksIO2026.Service.DTOs;
 using BooksIO2026.Service.DTOs.Book;
 
 namespace BooksIO2026.Service.Interfaces
@@ -9,6 +8,7 @@ namespace BooksIO2026.Service.Interfaces
         Result<List<BookListDto>> GetAll();
         Result<BookUpdateDto> GetBookForUpdate(int id);
         Result<BookDetailDto> GetById(int id);
+        Result<BookDetailDto> GetDetail(int id);
         Result Add(BookCreateDto bookDto);
         Result Update(BookUpdateDto bookDto);
         Result Delete(int bookId);

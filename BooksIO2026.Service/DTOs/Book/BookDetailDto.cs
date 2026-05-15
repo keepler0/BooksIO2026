@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace BooksIO2026.Service.DTOs.Book
+﻿namespace BooksIO2026.Service.DTOs.Book
 {
     public class BookDetailDto
     {
@@ -11,7 +7,9 @@ namespace BooksIO2026.Service.DTOs.Book
         public DateTime PublishedDate { get; set; }
         public bool IsActive { get; set; }
         public decimal Price { get; set; }
-        public string AuthorName { get; set; }=null!;
+        public string AuthorName { get; set; } = null!;
         public string PublisherName { get; set; } = null!;
+        //public int Stok { get; set; }
+        //TODO: verificar si en la entidad Book se agrega una propiedad de Stock
     }
 }

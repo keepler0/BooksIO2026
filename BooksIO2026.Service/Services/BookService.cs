@@ -97,6 +97,13 @@ namespace BooksIO2026.Service.Services
             return Result<BookDetailDto>.Success(BookMapper.ToBookDetailDto(book));
         }
 
+        public Result<BookDetailDto> GetDetail(int id)
+        {
+            var book= _unitOfWork.Books.GetById(id);
+            if (book is null) return Result<BookDetailDto>.Failure("Book not found");
+            return Result<BookDetailDto>.Success(BookMapper.ToBookDetailDto(book));
+        }
+
         public Result Update(BookUpdateDto bookDto)
         {
             var book = _unitOfWork.Books.GetById(bookDto.BookId);

@@ -1,6 +1,7 @@
 ﻿using BooksIO2026.Data;
 using BooksIO2026.Entities;
 using BooksIO2026.Service.Common;
+using BooksIO2026.Service.DTOs.Book;
 using BooksIO2026.Service.DTOs.Publisher;
 using BooksIO2026.Service.Interfaces;
 using BooksIO2026.Service.Mappers;
@@ -96,6 +97,33 @@ namespace BooksIO2026.Service.Services
             //return publisher is not null ? PublisherMapper.ToPublisherDetailDto(publisher) : null;
             if (publisher is null)return Result<PublisherDetailDto>.Failure("Publisher not found");
             return Result<PublisherDetailDto>.Success(PublisherMapper.ToPublisherDetailDto(publisher));
+        }
+
+        public Result<PublisherDetailDto> GetPublisherDetails(int id)
+        {
+            var query = _unitOfWork.Publishers.Query()
+                                              .Where(p => p.PublisherId == id)
+                                              .Select(p => new PublisherDetailDto
+                                                          {
+                                                              PublisherId = p.PublisherId,
+                                                              Name = p.Name,
+                                                              Country = p.Country,
+                                                              FoundedDate = p.FoundedDate,
+                                                              Email = p.Email,
+                                                              IsActive = p.IsActive,
+                                                              Books = p.Books != null ? 
+                                                                      p.Books.Select(b => new BookListDto
+                                                                                          {
+                                                                                              BookId = b.BookId,
+                                                                                              Title = b.Title,
+                                                                                              Price = b.Price
+                                                                                          })
+                                                                             .ToList() 
+                                                                             : new List<BookListDto>()
+                                                          })
+                                              .FirstOrDefault(p => p.PublisherId == id);
+            if (query is null) return Result<PublisherDetailDto>.Failure("Publisher not found!");
+            return Result<PublisherDetailDto>.Success(query);
         }
 
         public Result<PublisherUpdateDto> GetPublisherForUpdate(int id)

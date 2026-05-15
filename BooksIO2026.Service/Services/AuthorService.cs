@@ -2,6 +2,7 @@
 using BooksIO2026.Entities;
 using BooksIO2026.Service.Common;
 using BooksIO2026.Service.DTOs;
+using BooksIO2026.Service.DTOs.Book;
 using BooksIO2026.Service.Interfaces;
 using BooksIO2026.Service.Mappers;
 using FluentValidation;
@@ -87,6 +88,31 @@ namespace BooksIO2026.Service.Services
                                      .Select(a => AuthorMapper.ToAuthorListDto(a))
                                      .ToList();
             return Result<List<AuthorListDto>>.Success(authors);
+        }
+
+        public Result<AuthorDetailDto> GetAuthorDetails(int id)
+        {
+            var query = _unitOfWork.Authors.Query()
+                                           .Where(a => a.AuthorId == id)
+                                           .Select(a => new AuthorDetailDto
+                                                        {
+                                                            AuthorId = a.AuthorId,
+                                                            FirstName = a.FirstName,
+                                                            LastName = a.LastName,
+                                                            books = a.Books != null ? a.Books
+                                                                                       .Select(b => new BookListDto
+                                                                                                    {
+                                                                                                        BookId = b.BookId,
+                                                                                                        Title = b.Title,
+                                                                                                        Price = b.Price,
+                                                                                                        IsActive = b.IsActive
+                                                                                                        //Stock=b.Stock
+                                                                                                    })
+                                                                                       .ToList() : new List<BookListDto>()
+                                                        })
+                                           .FirstOrDefault();
+            if (query is null) return Result<AuthorDetailDto>.Failure("Author not found");
+            return Result<AuthorDetailDto>.Success(query);
         }
 
         public Result<AuthorUpdateDto> GetAuthorForUpdate(int id)
