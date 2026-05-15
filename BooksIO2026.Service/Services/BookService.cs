@@ -75,23 +75,26 @@ namespace BooksIO2026.Service.Services
             }
         }
 
-        public List<BookListDto> GetAll()
+        public Result<List<BookListDto>>GetAll()
         {
-            return _unitOfWork.Books.GetAll()
-                                    .Select(b => BookMapper.ToBookListDto(b))
-                                    .ToList();
+            var books = _unitOfWork.Books.GetAll()
+                                   .Select(b => BookMapper.ToBookListDto(b))
+                                   .ToList();
+            return Result<List<BookListDto>>.Success(books);
         }
 
-        public BookUpdateDto? GetBookForUpdate(int id)
+        public Result<BookUpdateDto> GetBookForUpdate(int id)
         {
             var book = _unitOfWork.Books.GetById(id);
-            return book is not null ? BookMapper.ToBookUpdateDto(book) : null;
+            if (book is null)return Result<BookUpdateDto>.Failure("Book not found");
+            return Result<BookUpdateDto>.Success(BookMapper.ToBookUpdateDto(book));
         }
 
-        public BookDetailDto? GetById(int id)
+        public Result<BookDetailDto> GetById(int id)
         {
             var book = _unitOfWork.Books.GetById(id);
-            return book is not null ? BookMapper.ToBookDetailDto(book) : null;
+            if (book is null) return Result<BookDetailDto>.Failure("Book not found");
+            return Result<BookDetailDto>.Success(BookMapper.ToBookDetailDto(book));
         }
 
         public Result Update(BookUpdateDto bookDto)

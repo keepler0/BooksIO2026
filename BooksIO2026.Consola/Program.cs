@@ -90,12 +90,13 @@ namespace BooksIO2026.Consola
             ShowPublishers(publisherService);
             Console.Write("Select an ID to delete: ");
             var id = int.Parse(Console.ReadLine()!);
-            var publisherDto = publisherService.GetById(id);
-            if (publisherDto is null)
+            var publisherResult = publisherService.GetById(id);
+            if (publisherResult.Isfailure)
             {
-                Console.WriteLine("Publisher not found!");
+                ShowErrors(publisherResult.Errors);
                 return;
             }
+            var publisherDto = publisherResult.Value!;
             var email = string.IsNullOrWhiteSpace(publisherDto.Email) ? "Email no disponible"
                                                                       : publisherDto.Email;
             var isActiveMessage = publisherDto.IsActive ? "Active"
@@ -114,17 +115,20 @@ namespace BooksIO2026.Consola
             ShowPublishers(publisherService);
             Console.Write("Select an ID to delete: ");
             var id = int.Parse(Console.ReadLine()!);
-            var publisherToDelete = publisherService.GetById(id);
+            var publisherResult = publisherService.GetById(id);
+            if (publisherResult.Isfailure)
+            {
+                ShowErrors(publisherResult.Errors);
+                return;
+            }
+            var publisherToDelete = publisherResult.Value!;
             Console.Write($"Are you sure to delete the publisher: {publisherToDelete?.Name}? : ");
             var yesOrNo = Console.ReadLine()!;
             if (yesOrNo.ToUpper() == "NO") return;
             var result = publisherService.Delete(id);
             if (result.Isfailure)
             {
-                foreach (var error in result.Errors)
-                {
-                    Console.WriteLine(error);
-                }
+                ShowErrors(result.Errors);
             }
             else
             {
@@ -140,35 +144,31 @@ namespace BooksIO2026.Consola
             ShowPublishers(publisherService);
             Console.Write("Select an ID to update");
             var publisherId = int.Parse(Console.ReadLine()!);
-            var publisherToUpdate = publisherService.GetPublisherForUpdate(publisherId);
-            if (publisherToUpdate is not null)
+            var publisherResult = publisherService.GetPublisherForUpdate(publisherId);
+            if (publisherResult.Isfailure)
             {
-                Console.Write($"Are you sure to update {publisherToUpdate.Name}? : ");
-                var yesOrNo = Console.ReadLine()!;
-                if (yesOrNo.ToUpper() == "NO") return;
-                var publisherData = publisherMaker(publisherToUpdate);
-                publisherToUpdate.Name = publisherData.Item1;
-                publisherToUpdate.Country = publisherData.Item2;
-                publisherToUpdate.FoundedDate = publisherData.Item3;
-                publisherToUpdate.Email = publisherData.Item4;
-                publisherToUpdate.IsActive = publisherData.Item5;
+                ShowErrors(publisherResult.Errors);
+                return;
+            }
+            var publisherToUpdate = publisherResult.Value!;
+            Console.Write($"Are you sure to update {publisherToUpdate.Name}? : ");
+            var yesOrNo = Console.ReadLine()!;
+            if (yesOrNo.ToUpper() == "NO") return;
+            var publisherData = publisherMaker(publisherToUpdate);
+            publisherToUpdate.Name = publisherData.Item1;
+            publisherToUpdate.Country = publisherData.Item2;
+            publisherToUpdate.FoundedDate = publisherData.Item3;
+            publisherToUpdate.Email = publisherData.Item4;
+            publisherToUpdate.IsActive = publisherData.Item5;
 
-                var result = publisherService.Update(publisherToUpdate);
-                if (result.Isfailure)//este bloque se ejecutara si la actualización no fue exitosa, es decir, si hubo errores
-                {
-                    foreach (var error in result.Errors)
-                    {
-                        Console.WriteLine(error);//mostramos los errores
-                    }
-                }
-                else
-                {
-                    Console.WriteLine("Author seccessfully updated!");
-                }
+            var result = publisherService.Update(publisherToUpdate);
+            if (result.Isfailure)//este bloque se ejecutara si la actualización no fue exitosa, es decir, si hubo errores
+            {
+                ShowErrors(result.Errors);
             }
             else
             {
-                Console.WriteLine("ERROR: The author was not found.");
+                Console.WriteLine("Author seccessfully updated!");
             }
             CleanScreen();
         }
@@ -188,10 +188,7 @@ namespace BooksIO2026.Consola
             var result = publisherService.Add(newPulisherDto);
             if (result.Isfailure)
             {
-                foreach (var error in result.Errors)
-                {
-                    Console.WriteLine(error);
-                }
+                ShowErrors(result.Errors);
             }
             else
             {
@@ -234,7 +231,13 @@ namespace BooksIO2026.Consola
         }
         private static void ShowPublishers(IPublisherService publisherService)
         {
-            var publisherList = publisherService.GetAll();
+            var publisherResult = publisherService.GetAll();
+            if (publisherResult.Isfailure)
+            {
+                ShowErrors(publisherResult.Errors);
+                return;
+            }
+            var publisherList = publisherResult.Value!;
             foreach (var publisherListDto in publisherList)
             {
                 Console.WriteLine($"ID: {publisherListDto.PublisherId,4} Name: {publisherListDto.Name,-20} Country: {publisherListDto.Country,-20}");
@@ -294,12 +297,13 @@ namespace BooksIO2026.Consola
             ShowBooks(bookService);
             Console.Write("Select an ID: ");
             var id = int.Parse(Console.ReadLine()!);
-            var bookDto = bookService.GetById(id);
-            if (bookDto is null)
+            var bookResult = bookService.GetById(id);
+            if (bookResult.Isfailure)
             {
-                Console.WriteLine("Book not found!");
+                ShowErrors(bookResult.Errors);
                 return;
             }
+            var bookDto = bookResult.Value!;
             var isActiveMessage = bookDto.IsActive ? "Yes"
                                                    : "No";
             Console.Clear();
@@ -316,17 +320,20 @@ namespace BooksIO2026.Consola
             ShowBooks(bookService);
             Console.Write("Select an ID to delete: ");
             var id = int.Parse(Console.ReadLine()!);
-            var bookToDelete = bookService.GetById(id);
+            var bookResult = bookService.GetById(id);
+            if (bookResult.Isfailure)
+            {
+                ShowErrors(bookResult.Errors);
+                return;
+            }
+            var bookToDelete = bookResult.Value!;
             Console.Write($"Are you sure to delete the book: {bookToDelete?.Title}? : ");
             var yesOrNo = Console.ReadLine()!;
             if (yesOrNo.ToUpper() == "NO") return;
             var result = bookService.Delete(id);
             if (result.Isfailure)
             {
-                foreach (var error in result.Errors)
-                {
-                    Console.WriteLine(error);
-                }
+                ShowErrors(result.Errors);
             }
             else
             {
@@ -344,35 +351,31 @@ namespace BooksIO2026.Consola
             ShowBooks(bookService);
             Console.Write("Select an ID to update");
             var bookId = int.Parse(Console.ReadLine()!);
-            var bookToUpdate = bookService.GetBookForUpdate(bookId);
-            if (bookToUpdate is not null)
+            var bookResult = bookService.GetBookForUpdate(bookId);
+            if (bookResult.Isfailure)
             {
-                Console.Write($"Are you sure to update {bookToUpdate.Title}? : ");
-                var yesOrNo = Console.ReadLine()!;
-                if (yesOrNo.ToUpper() == "NO") return;
-                var bookData = BookMaker(bookToUpdate);
-                bookToUpdate.Title = bookData.Item1;
-                bookToUpdate.Price = bookData.Item2;
-                bookToUpdate.PublishedDate = bookData.Item3;
-                bookToUpdate.IsActive = bookData.Item4;
-                bookToUpdate.AuthorId = SelectAuthorId(authorService);
-                bookToUpdate.PublisherId = SelectPublisherId(publisherService);
-                var result = bookService.Update(bookToUpdate);
-                if (result.Isfailure)
-                {
-                    foreach (var error in result.Errors)
-                    {
-                        Console.WriteLine(error);
-                    }
-                }
-                else
-                {
-                    Console.WriteLine("Author seccessfully updated!");
-                }
+                ShowErrors(bookResult.Errors);
+                return;
+            }
+            var bookToUpdate = bookResult.Value!;
+            Console.Write($"Are you sure to update {bookToUpdate.Title}? : ");
+            var yesOrNo = Console.ReadLine()!;
+            if (yesOrNo.ToUpper() == "NO") return;
+            var bookData = BookMaker(bookToUpdate);
+            bookToUpdate.Title = bookData.Item1;
+            bookToUpdate.Price = bookData.Item2;
+            bookToUpdate.PublishedDate = bookData.Item3;
+            bookToUpdate.IsActive = bookData.Item4;
+            bookToUpdate.AuthorId = SelectAuthorId(authorService);
+            bookToUpdate.PublisherId = SelectPublisherId(publisherService);
+            var result = bookService.Update(bookToUpdate);
+            if (result.Isfailure)
+            {
+                ShowErrors(result.Errors);
             }
             else
             {
-                Console.WriteLine("ERROR: The author was not found.");
+                Console.WriteLine("Author seccessfully updated!");
             }
             CleanScreen();
         }
@@ -398,10 +401,7 @@ namespace BooksIO2026.Consola
             var result = bookService.Add(newBookDto);
             if (result.Isfailure)
             {
-                foreach (var error in result.Errors)
-                {
-                    Console.WriteLine(error);
-                }
+                ShowErrors(result.Errors);
             }
             else
             {
@@ -420,6 +420,7 @@ namespace BooksIO2026.Consola
                 Console.Write("id: ");
                 var id = int.Parse(Console.ReadLine()!);
                 var PublishersIDs = publisherService.GetAll()
+                                                    .Value!
                                                     .Select(p => p.PublisherId)
                                                     .ToList();
                 if (PublishersIDs.Contains(id))
@@ -441,6 +442,7 @@ namespace BooksIO2026.Consola
                 Console.Write("id: ");
                 var id = int.Parse(Console.ReadLine()!);
                 var AuthorsIds = authorService.GetAll()
+                                              .Value!
                                               .Select(a => a.AuthorId)
                                               .ToList();
                 if (AuthorsIds.Contains(id))
@@ -469,6 +471,7 @@ namespace BooksIO2026.Consola
             }
             return (title!, price, publishedDate, isActive);
         }
+        //TODO continuar con el video 33:13
 
         private static void ListBooks(IBookService bookService)
         {
@@ -480,8 +483,14 @@ namespace BooksIO2026.Consola
 
         private static void ShowBooks(IBookService bookService)
         {
-            var list = bookService.GetAll();
-            foreach (var book in list)
+            var booksResult = bookService.GetAll();
+            if (booksResult.Isfailure)
+            {
+                ShowErrors(booksResult.Errors);
+                return;
+            }
+            var booksList= booksResult.Value!;
+            foreach (var book in booksList)
             {
                 Console.WriteLine($" ID: {book.BookId}\n Title: {book.Title}\n Price: ${book.Price}");
                 Console.WriteLine();
@@ -536,8 +545,13 @@ namespace BooksIO2026.Consola
             ShowAuthors(authorService);
             Console.Write("Select an ID to update");
             var authorId = int.Parse(Console.ReadLine()!);
-            var authorToUpdate = authorService.GetAuthorForUpdate(authorId);
-            if (authorToUpdate is not null)
+            var authorResult = authorService.GetAuthorForUpdate(authorId);
+            if (authorResult.Isfailure)
+            {
+                ShowErrors(authorResult.Errors);
+                return;
+            }
+            var authorToUpdate = authorResult.Value!;
             {
                 Console.Write($"Are you sure to update {authorToUpdate.FullName}? : ");
                 var yesOrNo = Console.ReadLine()!;
@@ -549,20 +563,27 @@ namespace BooksIO2026.Consola
                 var result = authorService.Update(authorToUpdate);
                 if (result.Isfailure)//este bloque se ejecutara si la actualización no fue exitosa, es decir, si hubo errores
                 {
-                    foreach (var error in result.Errors)
-                    {
-                        Console.WriteLine(error);//mostramos los errores
-                    }
+                    //foreach (var error in result.Errors)
+                    //{
+                    //    Console.WriteLine(error);//mostramos los errores
+                    //}
+                    ShowErrors(result.Errors);
                 }
                 else
                 {
                     Console.WriteLine("Author seccessfully updated!");
                 }
             }
-            else
+            CleanScreen();
+        }
+
+        private static void ShowErrors(List<string> errors)
+        {
+            foreach (var error in errors)
             {
-                Console.WriteLine("ERROR: The author was not found.");
+                Console.WriteLine(error);
             }
+            Thread.Sleep(1000);
             CleanScreen();
         }
 
@@ -584,17 +605,24 @@ namespace BooksIO2026.Consola
             ShowAuthors(authorService);
             Console.Write("Select an ID to delete: ");
             var id = int.Parse(Console.ReadLine()!);
-            var authorToDelete = authorService.GetById(id);
+            var authorResult = authorService.GetById(id);
+            if (authorResult.Isfailure)
+            {
+                ShowErrors(authorResult.Errors);
+                return;
+            }
+            var authorToDelete = authorResult.Value!;
             Console.Write($"Are you sure to delete the author: {authorToDelete?.FullName}? : ");
             var yesOrNo = Console.ReadLine()!;
             if (yesOrNo.ToUpper() == "NO") return;
             var result = authorService.Delete(id);
             if (result.Isfailure)
             {
-                foreach (var error in result.Errors)
-                {
-                    Console.WriteLine(error);
-                }
+                //foreach (var error in result.Errors)
+                //{
+                //    Console.WriteLine(error);
+                //}
+                ShowErrors(result.Errors);
             }
             else
             {
@@ -616,10 +644,11 @@ namespace BooksIO2026.Consola
             var result = authorService.Add(newAuthorDto);
             if (result.Isfailure)
             {
-                foreach (var error in result.Errors)
-                {
-                    Console.WriteLine(error);
-                }
+                //foreach (var error in result.Errors)
+                //{
+                //    Console.WriteLine(error);
+                //}
+                ShowErrors(result.Errors);
             }
             else
             {
@@ -637,7 +666,13 @@ namespace BooksIO2026.Consola
 
         private static void ShowAuthors(IAuthorService authorService)
         {
-            var authorsList = authorService.GetAll();
+            var authorsResult = authorService.GetAll();
+            if (authorsResult.Isfailure)
+            {
+                ShowErrors(authorsResult.Errors);
+                return;
+            }
+            var authorsList = authorsResult.Value!;
             foreach (var authorListDto in authorsList)
             {
                 Console.WriteLine($"ID: {authorListDto.AuthorId,4} Name: {authorListDto.FullName,-30}");

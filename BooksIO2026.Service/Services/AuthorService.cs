@@ -81,31 +81,26 @@ namespace BooksIO2026.Service.Services
         }
 
         //Como ahora usamos AuthorListDto para mostrar la lista de autores tenemos que crear los objetos AuthorListDto con el metodo Select de Linq
-        public List<AuthorListDto> GetAll()
+        public Result<List<AuthorListDto>> GetAll()
         {
-            return _unitOfWork.Authors.GetAll()
-                                      .Select(a => AuthorMapper.ToAuthorListDto(a))
-                                      .ToList();
+            var authors = _unitOfWork.Authors.GetAll()
+                                     .Select(a => AuthorMapper.ToAuthorListDto(a))
+                                     .ToList();
+            return Result<List<AuthorListDto>>.Success(authors);
         }
 
-        public AuthorUpdateDto? GetAuthorForUpdate(int id)
+        public Result<AuthorUpdateDto> GetAuthorForUpdate(int id)
         {
             var author = _unitOfWork.Authors.GetById(id);
-            if (author is not null)
-            {
-                return AuthorMapper.ToAuthorUpdateDto(author);
-            }
-            return null;
+            if (author is null) return Result<AuthorUpdateDto>.Failure("Author not found");
+            return Result<AuthorUpdateDto>.Success(AuthorMapper.ToAuthorUpdateDto(author));
         }
 
-        public AuthorDetailDto? GetById(int id)
+        public Result<AuthorListDto> GetById(int id)
         {
             var author = _unitOfWork.Authors.GetById(id);
-            if (author is not null)
-            {
-                return AuthorMapper.ToAuthorDetailDto(author);
-            }
-            return null;
+            if (author is null) return Result<AuthorListDto>.Failure("Author not found");
+            return Result<AuthorListDto>.Success(AuthorMapper.ToAuthorListDto(author));
         }
 
         public Result Update(AuthorUpdateDto authorDto)

@@ -77,14 +77,15 @@ namespace BooksIO2026.Service.Services
             }
         }
 
-        public List<PublisherListDto> GetAll()
+        public Result<List<PublisherListDto>> GetAll()
         {
-            return _unitOfWork.Publishers.GetAll()
-                                         .Select(p => PublisherMapper.ToPublisherListDto(p))
-                                         .ToList();
+            var publishers = _unitOfWork.Publishers.GetAll()
+                                        .Select(p => PublisherMapper.ToPublisherListDto(p))
+                                        .ToList();
+            return Result<List<PublisherListDto>>.Success(publishers);
         }
 
-        public PublisherDetailDto? GetById(int id)
+        public Result<PublisherDetailDto> GetById(int id)
         {
             var publisher = _unitOfWork.Publishers.GetById(id);
             //if (publisher is not null)
@@ -92,17 +93,21 @@ namespace BooksIO2026.Service.Services
             //    return PublisherMapper.ToPublisherDetailDto(publisher);
             //}
             //return null;
-            return publisher is not null ? PublisherMapper.ToPublisherDetailDto(publisher) : null;
+            //return publisher is not null ? PublisherMapper.ToPublisherDetailDto(publisher) : null;
+            if (publisher is null)return Result<PublisherDetailDto>.Failure("Publisher not found");
+            return Result<PublisherDetailDto>.Success(PublisherMapper.ToPublisherDetailDto(publisher));
         }
 
-        public PublisherUpdateDto? GetPublisherForUpdate(int id)
+        public Result<PublisherUpdateDto> GetPublisherForUpdate(int id)
         {
             var publisher = _unitOfWork.Publishers.GetById(id);
             //if (publisher is not null)
             //{
             //    return PublisherMapper.ToPublisherUpdateDto(publisher);
             //}
-            return publisher is not null ? PublisherMapper.ToPublisherUpdateDto(publisher) : null;
+            //return publisher is not null ? PublisherMapper.ToPublisherUpdateDto(publisher) : null;
+            if (publisher is null) return Result<PublisherUpdateDto>.Failure("Publisher not found");
+            return Result<PublisherUpdateDto>.Success(PublisherMapper.ToPublisherUpdateDto(publisher));
         }
 
         public Result Update(PublisherUpdateDto publisherDto)
